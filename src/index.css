@@ -1,0 +1,12 @@
+/* Tema claro de alto contraste: pensado para leerse a pleno sol. */
+:root {
+  --texto: #000;
+  --fondo: #fff;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--texto);
+  background: var(--fondo);
+}
+
+body {
+  margin: 0;
+}
