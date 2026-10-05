@@ -108,3 +108,123 @@ button {
 .resumen {
   font-size: 20px;
 }
+
+/* ---------- Pantalla de la carrera ---------- */
+
+/* Rejilla a la izquierda (lo que más se toca) y panel estrecho a la derecha. */
+.carrera {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  padding: 12px;
+  height: 100dvh;
+  box-sizing: border-box;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  grid-auto-rows: 88px;
+  gap: 10px;
+  overflow-y: auto;
+  align-content: start;
+}
+
+.dorsal {
+  position: relative;
+  font-size: 34px;
+  padding: 0;
+  /* Evita el retardo y el zoom del doble toque en iPad. */
+  touch-action: manipulation;
+}
+
+.dorsal[aria-pressed='true'] {
+  background: var(--texto);
+  color: var(--fondo);
+}
+
+.dorsal .marca {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 16px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.panel h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.panel h2 {
+  font-size: 26px;
+  margin: 0;
+}
+
+.huecos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.huecos li {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  border: 2px solid var(--borde);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 20px;
+}
+
+.huecos strong {
+  font-size: 30px;
+}
+
+.boton-deshacer {
+  font-size: 24px;
+  padding: 18px;
+  background: var(--error);
+  border-color: var(--error);
+  color: #fff;
+}
+
+.boton-deshacer:disabled,
+.panel button:disabled {
+  opacity: 0.35;
+}
+
+/* El último sprint guardado se resalta unos segundos para confirmar que se ha anotado. */
+.ultimo {
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  animation: aviso 4s ease-out;
+}
+
+@keyframes aviso {
+  0%,
+  60% {
+    background: #ffe066;
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* En móvil en vertical, el panel pasa debajo. */
+@media (max-width: 700px) {
+  .carrera {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
