@@ -20,3 +20,21 @@ export function registrarSiguienteSprint(carrera: Carrera, llegada: Dorsal[]): C
 export function deshacerUltimo(carrera: Carrera): Carrera {
   return { ...carrera, sucesos: carrera.sucesos.slice(0, -1) }
 }
+
+/** Cambia la llegada de un sprint ya anotado (corregir un error). Si en esa posición no hay un sprint, no hace nada. */
+export function corregirSprint(carrera: Carrera, indice: number, llegada: Dorsal[]): Carrera {
+  const suceso = carrera.sucesos[indice]
+  if (suceso?.tipo !== 'sprint') return carrera
+  const sucesos = carrera.sucesos.with(indice, { ...suceso, llegada })
+  return { ...carrera, sucesos }
+}
+
+/**
+ * Borra una incidencia (doblado, abandono...) del historial, aunque no sea la última.
+ * Los sprints no se borran, solo se corrigen: si se quitase uno, el calendario se descuadraría.
+ */
+export function borrarIncidencia(carrera: Carrera, indice: number): Carrera {
+  const suceso = carrera.sucesos[indice]
+  if (suceso === undefined || suceso.tipo === 'sprint') return carrera
+  return { ...carrera, sucesos: carrera.sucesos.filter((_, i) => i !== indice) }
+}

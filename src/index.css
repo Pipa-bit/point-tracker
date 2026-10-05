@@ -354,3 +354,51 @@ button {
   border-color: var(--suave);
   color: var(--suave);
 }
+
+/* ---------- Historial ---------- */
+
+.historial {
+  max-height: 85dvh;
+  width: min(560px, 92vw);
+}
+
+.historial ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historial li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--borde);
+  padding: 4px 0 8px;
+  font-size: 20px;
+}
+
+.historial li button {
+  font-size: 18px;
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.historial .peligro {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* Mientras se corrige un sprint del historial, el panel lo indica en amarillo. */
+.corrigiendo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #ffe066;
+  border-radius: 8px;
+  padding: 8px;
+}

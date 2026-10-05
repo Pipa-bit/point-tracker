@@ -3,19 +3,22 @@
 // Para registrar un sprint se tocan los dorsales en orden de llegada. Al tocar el último puesto
 // que puntúa, el sprint se guarda solo. Tocar otra vez un dorsal ya elegido lo quita.
 // Mantener pulsado un dorsal abre el menú de incidencias (doblado, abandono, descalificación).
+// Desde el historial se corrige cualquier sprint anterior o se borra una incidencia.
 
 import { useState } from 'react'
 import { describirSuceso } from '../describir'
-import { anadirSuceso, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
+import { anadirSuceso, borrarIncidencia, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
 import { calcularCuentas } from '../modelo/cuentas'
 import type { Carrera, Dorsal, Suceso } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
 import { BotonDorsal } from './BotonDorsal'
 import { ClasificacionEnVivo } from './ClasificacionEnVivo'
+import { Historial } from './Historial'
 import { MenuIncidencias } from './MenuIncidencias'
 
 const T = TEXTOS.carrera
 const TI = TEXTOS.incidencias
+const TH = TEXTOS.historial
 
 interface Props {
   carrera: Carrera
@@ -31,15 +34,29 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   const [menuDe, setMenuDe] = useState<Dorsal | null>(null)
   // Mientras no es null, los toques eligen a los escapados que doblan al pelotón en vez de anotar el sprint.
   const [escapados, setEscapados] = useState<Dorsal[] | null>(null)
+  const [historialAbierto, setHistorialAbierto] = useState(false)
+  // Sprint del historial que se está corrigiendo: su posición en la lista de sucesos y la nueva llegada.
+  const [correccion, setCorreccion] = useState<{ indice: number; llegada: Dorsal[] } | null>(null)
 
   const cuentas = calcularCuentas(carrera)
   const { siguienteSprint, sprintsRestantes } = cuentas
   const puestos = siguienteSprint?.puntos.length ?? 0
   const ultimo = carrera.sucesos.at(-1)
   // Dorsales que ya no corren (eliminados, abandonos, descalificados): no se pueden tocar.
+  const sprintCorregido = correccion && carrera.sucesos[correccion.indice]
+  const puestosCorreccion =
+    sprintCorregido?.tipo === 'sprint'
+      ? (sprintCorregido.aFalta === 0 ? carrera.configuracion.puntosFinal : carrera.configuracion.puntosIntermedio).length
+      : 0
   const fuera = new Set(cuentas.clasificacion.filas.filter((f) => f.estado !== 'en-carrera').map((f) => f.dorsal))
 
   function tocarDorsal(dorsal: Dorsal) {
+    if (correccion !== null) {
+      const { llegada } = correccion
+      if (llegada.includes(dorsal)) setCorreccion({ ...correccion, llegada: llegada.filter((d) => d !== dorsal) })
+      else if (llegada.length < puestosCorreccion) setCorreccion({ ...correccion, llegada: [...llegada, dorsal] })
+      return
+    }
     if (escapados !== null) {
       setEscapados(escapados.includes(dorsal) ? escapados.filter((d) => d !== dorsal) : [...escapados, dorsal])
       return
@@ -73,6 +90,20 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     setEscapados(null)
   }
 
+  function empezarCorreccion(indice: number) {
+    const suceso = carrera.sucesos[indice]
+    if (suceso?.tipo !== 'sprint') return
+    setHistorialAbierto(false)
+    setSeleccion([])
+    setCorreccion({ indice, llegada: suceso.llegada })
+  }
+
+  function guardarCorreccion() {
+    if (correccion === null) return
+    alCambiar(corregirSprint(carrera, correccion.indice, correccion.llegada))
+    setCorreccion(null)
+  }
+
   function deshacer() {
     // Si hay un sprint a medias, deshacer quita el último dorsal tocado; si no, el último suceso guardado.
     if (seleccion.length > 0) setSeleccion(seleccion.slice(0, -1))
@@ -92,8 +123,9 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     <main className="carrera">
       <section className="rejilla" aria-label="Dorsales">
         {carrera.participantes.map(({ dorsal }) => {
-          const posicion = seleccion.indexOf(dorsal)
-          const estaFuera = fuera.has(dorsal)
+          const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
+          // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
+          const estaFuera = correccion === null && fuera.has(dorsal)
           const esEscapado = escapados?.includes(dorsal) ?? false
           const clases = ['dorsal', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
           return (
@@ -103,7 +135,7 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
               pulsado={posicion !== -1 || esEscapado}
               desactivado={estaFuera}
               alTocar={() => tocarDorsal(dorsal)}
-              alMantener={() => escapados === null && setMenuDe(dorsal)}
+              alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
             >
               {dorsal}
               {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
@@ -116,7 +148,26 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
       <aside className="panel">
         <h1>{carrera.nombre}</h1>
 
-        {escapados !== null ? (
+        {correccion !== null && sprintCorregido?.tipo === 'sprint' ? (
+          <div className="corrigiendo">
+            <h2>
+              {TH.corrigiendo}: {sprintCorregido.aFalta === 0 ? T.sprintFinal : `${T.sprintAFalta} ${sprintCorregido.aFalta}`}
+            </h2>
+            <p className="ayuda">{TH.ayudaCorregir}</p>
+            <ol className="huecos">
+              {Array.from({ length: puestosCorreccion }, (_, i) => (
+                <li key={i}>
+                  <span>{T.puesto(i + 1)}</span>
+                  <strong>{correccion.llegada[i] ?? '—'}</strong>
+                </li>
+              ))}
+            </ol>
+            <button className="boton-principal" onClick={guardarCorreccion}>
+              {TH.guardar}
+            </button>
+            <button onClick={() => setCorreccion(null)}>{TH.cancelar}</button>
+          </div>
+        ) : escapados !== null ? (
           <>
             <h2>{TI.tocaEscapados}</h2>
             <p className="ayuda">{TI.escapadaDetalle}</p>
@@ -171,6 +222,9 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
             <button onClick={() => setEscapados([])} disabled={seleccion.length > 0}>
               {TI.escapadaDobla}
             </button>
+            <button onClick={() => setHistorialAbierto(true)} disabled={seleccion.length > 0}>
+              {TH.abrir}
+            </button>
           </>
         )}
 
@@ -179,6 +233,14 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
         <button onClick={salir}>{T.nuevaCarrera}</button>
       </aside>
 
+      {historialAbierto && (
+        <Historial
+          sucesos={carrera.sucesos}
+          alCorregir={empezarCorreccion}
+          alBorrar={(indice) => alCambiar(borrarIncidencia(carrera, indice))}
+          alCerrar={() => setHistorialAbierto(false)}
+        />
+      )}
       {menuDe !== null && <MenuIncidencias dorsal={menuDe} alElegir={anotarIncidencia} alCancelar={() => setMenuDe(null)} />}
     </main>
   )
