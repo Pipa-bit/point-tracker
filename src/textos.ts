@@ -32,4 +32,17 @@ export const TEXTOS = {
     terminada: 'Todos los sprints registrados',
     confirmarSalir: '¿Empezar una carrera nueva? Esta se borrará del dispositivo.',
   },
+  clasificacion: {
+    titulo: 'Clasificación',
+    enJuego: 'Puntos en juego',
+    nadie: 'Todavía no ha puntuado nadie.',
+    lider: 'Líder',
+    asegurado: 'Asegurado*',
+    fueraDeAlcance: 'Sin opciones',
+    noTerminan: 'No terminan',
+    eliminado: 'eliminado',
+    abandono: 'abandono',
+    descalificado: 'descalificado',
+    notaAsegurado: '* Salvo doblaje o descalificación.',
+  },
 }

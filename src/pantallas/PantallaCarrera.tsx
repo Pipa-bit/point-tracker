@@ -8,6 +8,7 @@ import { deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
 import { calcularCuentas } from '../modelo/cuentas'
 import type { Carrera, Dorsal, Suceso } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
+import { ClasificacionEnVivo } from './ClasificacionEnVivo'
 
 const T = TEXTOS.carrera
 
@@ -22,7 +23,8 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   // Dorsales tocados en el sprint en curso, en orden de llegada. Aún no forman parte de la carrera.
   const [seleccion, setSeleccion] = useState<Dorsal[]>([])
 
-  const { siguienteSprint, sprintsRestantes } = calcularCuentas(carrera)
+  const cuentas = calcularCuentas(carrera)
+  const { siguienteSprint, sprintsRestantes } = cuentas
   const puestos = siguienteSprint?.puntos.length ?? 0
   // `s is ...` le dice a TypeScript que lo encontrado es un sprint, para poder usar `aFalta` y `llegada`.
   const ultimo = carrera.sucesos.findLast((s): s is Extract<Suceso, { tipo: 'sprint' }> => s.tipo === 'sprint')
@@ -116,6 +118,8 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
             {T.sinRegistrar}
           </button>
         )}
+
+        <ClasificacionEnVivo cuentas={cuentas} />
 
         <button onClick={salir}>{T.nuevaCarrera}</button>
       </aside>
