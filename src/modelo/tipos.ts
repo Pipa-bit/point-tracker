@@ -43,6 +43,8 @@ export type Suceso =
   | { tipo: 'doblado'; dorsal: Dorsal; por: 'peloton' | 'escapada' }
   /** Abandono o descalificación: pierde los puntos y no termina. */
   | { tipo: 'abandono' | 'descalificacion'; dorsal: Dorsal }
+  /** Una escapada dobla al pelotón: todos los demás que siguen en carrera pierden sus puntos, pero continúan. */
+  | { tipo: 'escapadaDoblaPeloton'; escapados: Dorsal[] }
 
 /** Una carrera completa tal y como se guarda en el dispositivo. */
 export interface Carrera {
