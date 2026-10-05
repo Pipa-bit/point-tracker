@@ -2,11 +2,109 @@
 :root {
   --texto: #000;
   --fondo: #fff;
+  --borde: #000;
+  --suave: #555;
+  --acento: #0047b3;
+  --error: #b00020;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
   color: var(--texto);
   background: var(--fondo);
 }
 
 body {
   margin: 0;
+}
+
+.pantalla {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Formulario en dos columnas en horizontal; una sola en pantallas estrechas. */
+.formulario {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .formulario {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.campo-ancho {
+  grid-column: 1 / -1;
+}
+
+.campo small {
+  font-weight: 400;
+  color: var(--suave);
+}
+
+input {
+  font: inherit;
+  font-size: 22px;
+  padding: 12px;
+  border: 2px solid var(--borde);
+  border-radius: 8px;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  padding: 14px 18px;
+  border: 2px solid var(--borde);
+  border-radius: 8px;
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+/* Botones que funcionan como interruptor: el elegido va relleno. */
+.selector {
+  display: flex;
+  gap: 8px;
+}
+
+.selector button {
+  flex: 1;
+}
+
+.selector button[aria-pressed='true'] {
+  background: var(--texto);
+  color: var(--fondo);
+}
+
+.boton-principal {
+  width: 100%;
+  margin-top: 16px;
+  font-size: 24px;
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+
+.boton-principal:disabled {
+  opacity: 0.35;
+}
+
+.errores {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.resumen {
+  font-size: 20px;
 }
