@@ -2,12 +2,13 @@
 // Mientras se rellena, muestra en directo qué sprints habrá y avisa de los errores.
 
 import { useState } from 'react'
-import { cargarJuegos, guardarJuegos } from '../almacen'
+import { cargarHistorial, cargarJuegos, guardarJuegos } from '../almacen'
 import { calendarioSprints, validarConfiguracion } from '../modelo/calendario'
 import { leerDorsales } from '../modelo/dorsales'
 import { participantesConEquipo, type JuegoDorsales } from '../modelo/equipo'
 import { PUNTOS_POR_DEFECTO, type Carrera, type ConfiguracionCarrera, type Participante } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
+import { PantallaHistorial } from './PantallaHistorial'
 import { PantallaJuegos } from './PantallaJuegos'
 
 const T = TEXTOS.crearCarrera
@@ -49,6 +50,20 @@ export function CrearCarrera({ alCrear }: Props) {
   const [juegos, setJuegos] = useState<JuegoDorsales[]>(() => cargarJuegos())
   const [juegoId, setJuegoId] = useState('')
   const [viendoJuegos, setViendoJuegos] = useState(false)
+  const [viendoHistorial, setViendoHistorial] = useState(false)
+  // Solo para el número del botón; se vuelve a leer al volver del historial porque allí se pueden borrar.
+  const [carrerasGuardadas, setCarrerasGuardadas] = useState(() => cargarHistorial().length)
+
+  if (viendoHistorial) {
+    return (
+      <PantallaHistorial
+        alVolver={() => {
+          setCarrerasGuardadas(cargarHistorial().length)
+          setViendoHistorial(false)
+        }}
+      />
+    )
+  }
 
   if (viendoJuegos) {
     return (
@@ -175,9 +190,12 @@ export function CrearCarrera({ alCrear }: Props) {
         </p>
       )}
 
-      <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={empezar}>
-        {T.empezar}
-      </button>
+      <div className="acciones">
+        <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={empezar}>
+          {T.empezar}
+        </button>
+        <button onClick={() => setViendoHistorial(true)}>{TEXTOS.historialCarreras.abrir(carrerasGuardadas)}</button>
+      </div>
     </main>
   )
 }

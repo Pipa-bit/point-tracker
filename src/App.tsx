@@ -1,6 +1,12 @@
 // Componente raíz: decide qué pantalla se ve según haya o no una carrera en marcha.
 import { useEffect, useState } from 'react'
-import { borrarCarreraActual, cargarCarreraActual, guardarCarreraActual, pedirAlmacenamientoPersistente } from './almacen'
+import {
+  borrarCarreraActual,
+  cargarCarreraActual,
+  guardarCarreraActual,
+  guardarEnHistorial,
+  pedirAlmacenamientoPersistente,
+} from './almacen'
 import type { Carrera } from './modelo/tipos'
 import { CrearCarrera } from './pantallas/CrearCarrera'
 import { PantallaFinal } from './pantallas/PantallaFinal'
@@ -15,6 +21,8 @@ function App() {
   useEffect(() => {
     if (carrera) guardarCarreraActual(carrera)
     else borrarCarreraActual()
+    // Las terminadas también van al historial; si se corrigen después, se actualiza la copia.
+    if (carrera?.estado === 'terminada') guardarEnHistorial(carrera)
   }, [carrera])
 
   // Con [] solo se ejecuta una vez, al abrir la web.
