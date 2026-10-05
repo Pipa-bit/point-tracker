@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { borrarIncidencia, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from './acciones'
+import { calcularClasificacion } from './clasificacion'
+import { borrarIncidencia, corregirSprint, deshacerUltimo, registrarSiguienteSprint, resolverDesempate } from './acciones'
 import { PUNTOS_POR_DEFECTO, type Carrera } from './tipos'
 
 function carreraVacia(): Carrera {
@@ -73,5 +74,38 @@ describe('corregir el historial', () => {
     const carrera = conSucesos()
     expect(borrarIncidencia(carrera, 1).sucesos).toEqual([carrera.sucesos[0], carrera.sucesos[2]])
     expect(borrarIncidencia(carrera, 0)).toBe(carrera)
+  })
+})
+
+describe('resolverDesempate', () => {
+  // 1 y 2 empatan a 3 puntos y ninguno cruza entre los tres primeros del final: la web no sabe quién va delante.
+  function conEmpate(): Carrera {
+    return {
+      ...carreraVacia(),
+      configuracion: { ...carreraVacia().configuracion, primerSprintAFalta: 4 },
+      participantes: [1, 2, 3, 4, 5].map((dorsal) => ({ dorsal })),
+      sucesos: [
+        { tipo: 'sprint', aFalta: 4, llegada: [1, 2] },
+        { tipo: 'sprint', aFalta: 2, llegada: [2, 1] },
+        { tipo: 'sprint', aFalta: 0, llegada: [3, 4, 5] },
+      ],
+    }
+  }
+
+  it('con el orden de llegada el empate queda resuelto', () => {
+    expect(calcularClasificacion(conEmpate()).desempatesPendientes).toEqual([[1, 2]])
+    const resuelta = resolverDesempate(conEmpate(), [2, 1])
+    const { filas, desempatesPendientes } = calcularClasificacion(resuelta)
+    expect(desempatesPendientes).toEqual([])
+    expect(filas.slice(0, 3).map((f) => [f.dorsal, f.puesto])).toEqual([
+      [3, 1], // también tiene 3 puntos, pero puntuó en el final y va delante
+      [2, 2],
+      [1, 3],
+    ])
+  })
+
+  it('no repite dorsales que ya estaban en la llegada', () => {
+    const una = resolverDesempate(conEmpate(), [2, 1])
+    expect(resolverDesempate(una, [1, 2]).llegadaFinalCompleta).toEqual([2, 1])
   })
 })

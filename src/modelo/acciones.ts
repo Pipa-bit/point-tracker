@@ -38,3 +38,17 @@ export function borrarIncidencia(carrera: Carrera, indice: number): Carrera {
   if (suceso === undefined || suceso.tipo === 'sprint') return carrera
   return { ...carrera, sucesos: carrera.sucesos.filter((_, i) => i !== indice) }
 }
+
+/**
+ * Anota el orden en que llegaron en la última vuelta unos patinadores empatados a puntos.
+ * Se añade detrás de lo que ya se sabía de la llegada, así que solo desempata a quienes no se conocía.
+ */
+export function resolverDesempate(carrera: Carrera, orden: Dorsal[]): Carrera {
+  const anterior = carrera.llegadaFinalCompleta ?? []
+  return { ...carrera, llegadaFinalCompleta: [...anterior, ...orden.filter((d) => !anterior.includes(d))] }
+}
+
+/** Marca la carrera como terminada, o la vuelve a abrir para seguir corrigiendo. */
+export function cambiarEstado(carrera: Carrera, estado: Carrera['estado']): Carrera {
+  return { ...carrera, estado }
+}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { borrarCarreraActual, cargarCarreraActual, guardarCarreraActual, pedirAlmacenamientoPersistente } from './almacen'
 import type { Carrera } from './modelo/tipos'
 import { CrearCarrera } from './pantallas/CrearCarrera'
+import { PantallaFinal } from './pantallas/PantallaFinal'
 import { PantallaCarrera } from './pantallas/PantallaCarrera'
 
 function App() {
@@ -23,6 +24,9 @@ function App() {
 
   if (carrera === null) {
     return <CrearCarrera alCrear={setCarrera} />
+  }
+  if (carrera.estado === 'terminada') {
+    return <PantallaFinal carrera={carrera} alCambiar={setCarrera} alSalir={() => setCarrera(null)} />
   }
   return <PantallaCarrera carrera={carrera} alCambiar={setCarrera} alSalir={() => setCarrera(null)} />
 }
