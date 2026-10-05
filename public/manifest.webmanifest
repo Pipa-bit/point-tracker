@@ -1,0 +1,16 @@
+{
+  "name": "Point Tracker",
+  "short_name": "Point Tracker",
+  "description": "Cuenta los puntos de las carreras de puntuación de patinaje de velocidad.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0047b3",
+  "icons": [
+    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
