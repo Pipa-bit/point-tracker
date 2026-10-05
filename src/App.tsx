@@ -1,12 +1,25 @@
 // Componente raíz: decide qué pantalla se ve según haya o no una carrera en marcha.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { borrarCarreraActual, cargarCarreraActual, guardarCarreraActual, pedirAlmacenamientoPersistente } from './almacen'
 import type { Carrera } from './modelo/tipos'
 import { CrearCarrera } from './pantallas/CrearCarrera'
 import { PantallaCarrera } from './pantallas/PantallaCarrera'
 
 function App() {
-  // null = todavía no hay carrera; se muestra la pantalla de crearla.
-  const [carrera, setCarrera] = useState<Carrera | null>(null)
+  // Al abrir la web se recupera la carrera guardada, si la hay. null = se muestra la pantalla de crearla.
+  // Pasar una función a useState hace que solo se lea el almacén la primera vez, no en cada pintado.
+  const [carrera, setCarrera] = useState<Carrera | null>(() => cargarCarreraActual())
+
+  // useEffect ejecuta código después de pintar. Este se repite cada vez que cambia `carrera`.
+  useEffect(() => {
+    if (carrera) guardarCarreraActual(carrera)
+    else borrarCarreraActual()
+  }, [carrera])
+
+  // Con [] solo se ejecuta una vez, al abrir la web.
+  useEffect(() => {
+    pedirAlmacenamientoPersistente()
+  }, [])
 
   if (carrera === null) {
     return <CrearCarrera alCrear={setCarrera} />

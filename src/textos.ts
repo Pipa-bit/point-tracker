@@ -30,6 +30,6 @@ export const TEXTOS = {
     aFalta: 'a falta de',
     vacio: 'sin registrar',
     terminada: 'Todos los sprints registrados',
-    confirmarSalir: '¿Salir de esta carrera? Todavía no se guarda y se perderá.',
+    confirmarSalir: '¿Empezar una carrera nueva? Esta se borrará del dispositivo.',
   },
 }
