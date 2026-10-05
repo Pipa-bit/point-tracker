@@ -228,3 +228,50 @@ button {
     height: auto;
   }
 }
+
+/* ---------- Clasificación en vivo ---------- */
+
+.clasificacion h2 {
+  font-size: 22px;
+}
+
+.clasificacion p {
+  margin: 4px 0;
+}
+
+.clasificacion table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 20px;
+}
+
+.clasificacion td {
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--borde);
+}
+
+.clasificacion .nombre {
+  font-weight: 700;
+}
+
+.clasificacion .puntos {
+  text-align: right;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+.clasificacion .distancia {
+  text-align: right;
+  font-size: 16px;
+}
+
+/* Quien ya no puede alcanzar al líder se ve atenuado. */
+.clasificacion .sin-opciones {
+  color: var(--suave);
+}
+
+.clasificacion .nota,
+.clasificacion .no-terminan {
+  font-size: 15px;
+  color: var(--suave);
+}
