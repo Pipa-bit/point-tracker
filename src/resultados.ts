@@ -1,6 +1,6 @@
-// Texto de los resultados para compartir por WhatsApp (o pegar donde sea).
+// Resultados listos para compartir: como texto para WhatsApp, o como datos para dibujar la imagen.
 //
-// Ejemplo:
+// Ejemplo de texto:
 //   🏁 Liga Nacional, jornada 3 (05/10/2026)
 //   1.º 7 Adrián: 12 pt
 //   2.º 3: 8 pt
@@ -20,23 +20,44 @@ export function fechaLegible(fechaIso: string): string {
   return `${dia}/${mes}/${anio}`
 }
 
-export function textoResultados(carrera: Carrera): string {
+export interface Resultados {
+  titulo: string
+  fecha: string
+  /** Solo los que han puntuado, en orden. */
+  filas: { puesto: string; quien: string; puntos: string }[]
+  /** Líneas finales: cuántos no puntúan y quiénes no terminan. */
+  pie: string[]
+}
+
+/** Lo que se comparte, una sola vez para el texto y para la imagen. */
+export function resultados(carrera: Carrera): Resultados {
   const { filas } = calcularClasificacion(carrera)
   const enCarrera = filas.filter((f) => f.estado === 'en-carrera')
   const conPuntos = enCarrera.filter((f) => f.puntos > 0)
   const sinPuntos = enCarrera.length - conPuntos.length
   const noTerminan = filas.filter((f) => f.estado !== 'en-carrera')
 
-  const lineas = [`🏁 ${carrera.nombre} (${fechaLegible(carrera.fecha)})`]
-  for (const fila of conPuntos) {
-    const quien = fila.nombre ? `${fila.dorsal} ${fila.nombre}` : `${fila.dorsal}`
-    lineas.push(`${TEXTOS.carrera.puesto(fila.puesto!)} ${quien}: ${fila.puntos} ${T.puntos}`)
-  }
-  if (sinPuntos > 0) lineas.push(T.sinPuntos(sinPuntos))
+  const pie: string[] = []
+  if (sinPuntos > 0) pie.push(T.sinPuntos(sinPuntos))
   if (noTerminan.length > 0) {
     const estados: Record<string, string> = TEXTOS.clasificacion
     const lista = noTerminan.map((f) => `${f.nombre ?? f.dorsal} (${estados[f.estado]})`).join(', ')
-    lineas.push(`${TEXTOS.clasificacion.noTerminan}: ${lista}`)
+    pie.push(`${TEXTOS.clasificacion.noTerminan}: ${lista}`)
   }
-  return lineas.join('\n')
+
+  return {
+    titulo: carrera.nombre,
+    fecha: fechaLegible(carrera.fecha),
+    filas: conPuntos.map((f) => ({
+      puesto: TEXTOS.carrera.puesto(f.puesto!),
+      quien: f.nombre ? `${f.dorsal} ${f.nombre}` : `${f.dorsal}`,
+      puntos: `${f.puntos} ${T.puntos}`,
+    })),
+    pie,
+  }
+}
+
+export function textoResultados(carrera: Carrera): string {
+  const r = resultados(carrera)
+  return [`🏁 ${r.titulo} (${r.fecha})`, ...r.filas.map((f) => `${f.puesto} ${f.quien}: ${f.puntos}`), ...r.pie].join('\n')
 }
