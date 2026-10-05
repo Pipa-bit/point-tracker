@@ -1,0 +1,56 @@
+import { describe, expect, it } from 'vitest'
+import { borrarCarreraActual, cargarCarreraActual, guardarCarreraActual } from './almacen'
+import { PUNTOS_POR_DEFECTO, type Carrera } from './modelo/tipos'
+
+/** Imita el localStorage del navegador con un Map. */
+function almacenFalso() {
+  const datos = new Map<string, string>()
+  return {
+    datos,
+    getItem: (k: string) => datos.get(k) ?? null,
+    setItem: (k: string, v: string) => void datos.set(k, v),
+    removeItem: (k: string) => void datos.delete(k),
+  }
+}
+
+const carrera: Carrera = {
+  id: 'abc',
+  nombre: 'Prueba',
+  fecha: '2026-10-05',
+  configuracion: { vueltasTotales: 10, primerSprintAFalta: 4, frecuencia: 2, ...PUNTOS_POR_DEFECTO },
+  participantes: [{ dorsal: 1 }, { dorsal: 2, nombre: 'Adrián' }],
+  sucesos: [{ tipo: 'sprint', aFalta: 4, llegada: [2, 1] }],
+  estado: 'en-curso',
+}
+
+describe('almacén de la carrera actual', () => {
+  it('lo que se guarda se recupera igual', () => {
+    const almacen = almacenFalso()
+    guardarCarreraActual(carrera, almacen)
+    expect(cargarCarreraActual(almacen)).toEqual(carrera)
+  })
+
+  it('sin nada guardado devuelve null', () => {
+    expect(cargarCarreraActual(almacenFalso())).toBeNull()
+  })
+
+  it('borrar deja el almacén vacío', () => {
+    const almacen = almacenFalso()
+    guardarCarreraActual(carrera, almacen)
+    borrarCarreraActual(almacen)
+    expect(cargarCarreraActual(almacen)).toBeNull()
+  })
+
+  it('ignora datos corruptos en lugar de fallar', () => {
+    const almacen = almacenFalso()
+    almacen.setItem('point-tracker:carrera-actual', '{esto no es json')
+    expect(cargarCarreraActual(almacen)).toBeNull()
+    almacen.setItem('point-tracker:carrera-actual', '{"hola": 1}')
+    expect(cargarCarreraActual(almacen)).toBeNull()
+  })
+
+  it('si no hay almacenamiento disponible no falla', () => {
+    expect(() => guardarCarreraActual(carrera, null)).not.toThrow()
+    expect(cargarCarreraActual(null)).toBeNull()
+  })
+})
