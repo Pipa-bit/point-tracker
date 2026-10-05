@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { describirSuceso } from '../describir'
-import { anadirSuceso, borrarIncidencia, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
+import { anadirSuceso, borrarIncidencia, cambiarEstado, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
 import { calcularCuentas } from '../modelo/cuentas'
 import type { Carrera, Dorsal, Suceso } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
@@ -198,7 +198,12 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
                 </p>
               </>
             ) : (
-              <h2>{T.terminada}</h2>
+              <>
+                <h2>{T.terminada}</h2>
+                <button className="boton-principal" onClick={() => alCambiar(cambiarEstado(carrera, 'terminada'))}>
+                  {TEXTOS.final.terminar}
+                </button>
+              </>
             )}
 
             <button className="boton-deshacer" onClick={deshacer} disabled={seleccion.length === 0 && carrera.sucesos.length === 0}>
