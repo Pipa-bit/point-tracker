@@ -12,3 +12,11 @@ npm test        # ejecuta los tests de la lógica de puntos
 ```
 
 Cada vez que se sube código a `main`, GitHub Actions pasa los tests y, si van bien, la publica en GitHub Pages.
+
+## Instalar en el iPad
+
+1. Abre https://pipa-bit.github.io/point-tracker/ en **Safari** (con conexión).
+2. Pulsa el botón de **Compartir** y elige **Añadir a pantalla de inicio**.
+3. Ábrela desde el icono. Desde ese momento funciona **sin conexión**, y las carreras se guardan en el iPad.
+
+Cuando se publica una versión nueva, se descarga sola la próxima vez que abras la web con conexión.
