@@ -46,6 +46,15 @@ describe('incidencias', () => {
     expect(uno.estado).toBe('en-carrera')
   })
 
+  it('si la escapada dobla al pelotón, todos los demás pierden sus puntos pero siguen en carrera', () => {
+    const { filas } = calcularClasificacion(
+      carrera([sprint(4, 1, 2), sprint(2, 3, 4), { tipo: 'escapadaDoblaPeloton', escapados: [1, 3] }, sprint(0, 2)]),
+    )
+    const puntos = Object.fromEntries(filas.map((f) => [f.dorsal, f.puntos]))
+    expect(puntos).toEqual({ 1: 2, 2: 3, 3: 2, 4: 0, 5: 0, 6: 0 }) // el 2 pierde su punto y luego gana 3 en el final
+    expect(filas.every((f) => f.estado === 'en-carrera')).toBe(true)
+  })
+
   it('doblado por el pelotón: queda eliminado, sin puntos y al final sin puesto', () => {
     const { filas } = calcularClasificacion(carrera([sprint(4, 1, 2), { tipo: 'doblado', dorsal: 1, por: 'peloton' }]))
     expect(filas.at(-1)).toEqual({ dorsal: 1, nombre: undefined, puntos: 0, puesto: null, estado: 'eliminado' })

@@ -3,6 +3,7 @@
 // Recorre los sucesos en orden, como si se reviviera la carrera:
 // - Cada sprint suma puntos a los primeros en cruzar.
 // - Doblado por una escapada: pierde los puntos que llevaba, pero sigue y puede volver a puntuar.
+//   Si la escapada dobla a todo el pelotón, eso les pasa a todos los que no van escapados.
 // - Doblado por el pelotón, abandono o descalificación: pierde los puntos y no termina.
 // Después ordena: más puntos primero y, a igualdad de puntos, quien llegó antes en la última vuelta.
 
@@ -71,6 +72,16 @@ export function calcularClasificacion(carrera: DatosCarrera): Clasificacion {
         patinador.puntos += puntos[posicion] ?? 0
         if (esFinal) llegadaFinal.push(dorsal)
       })
+      continue
+    }
+
+    if (suceso.tipo === 'escapadaDoblaPeloton') {
+      for (const dorsal of suceso.escapados) {
+        if (!patinadores.has(dorsal)) avisos.push(`Escapada: el dorsal ${dorsal} no está inscrito.`)
+      }
+      for (const [dorsal, patinador] of patinadores) {
+        if (patinador.estado === 'en-carrera' && !suceso.escapados.includes(dorsal)) patinador.puntos = 0
+      }
       continue
     }
 
