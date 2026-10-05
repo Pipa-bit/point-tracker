@@ -1,11 +1,14 @@
-// Pantalla para preparar una carrera: reglas, vueltas y dorsales.
+// Pantalla para preparar una carrera: reglas, vueltas, dorsales y, si se quiere, el equipo con sus nombres.
 // Mientras se rellena, muestra en directo qué sprints habrá y avisa de los errores.
 
 import { useState } from 'react'
+import { cargarJuegos, guardarJuegos } from '../almacen'
 import { calendarioSprints, validarConfiguracion } from '../modelo/calendario'
 import { leerDorsales } from '../modelo/dorsales'
-import { PUNTOS_POR_DEFECTO, type Carrera, type ConfiguracionCarrera, type Dorsal } from '../modelo/tipos'
+import { participantesConEquipo, type JuegoDorsales } from '../modelo/equipo'
+import { PUNTOS_POR_DEFECTO, type Carrera, type ConfiguracionCarrera, type Participante } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
+import { PantallaJuegos } from './PantallaJuegos'
 
 const T = TEXTOS.crearCarrera
 
@@ -17,13 +20,13 @@ function leerPuntos(texto: string): number[] | null {
 }
 
 /** Monta la carrera vacía, con fecha de hoy y un identificador único. */
-function nuevaCarrera(nombre: string, configuracion: ConfiguracionCarrera, dorsales: Dorsal[]): Carrera {
+function nuevaCarrera(nombre: string, configuracion: ConfiguracionCarrera, participantes: Participante[]): Carrera {
   return {
     id: crypto.randomUUID(),
     nombre,
     fecha: new Date().toISOString().slice(0, 10),
     configuracion,
-    participantes: dorsales.map((dorsal) => ({ dorsal })),
+    participantes,
     sucesos: [],
     estado: 'en-curso',
   }
@@ -43,6 +46,22 @@ export function CrearCarrera({ alCrear }: Props) {
   const [puntosIntermedio, setPuntosIntermedio] = useState(PUNTOS_POR_DEFECTO.puntosIntermedio.join(', '))
   const [puntosFinal, setPuntosFinal] = useState(PUNTOS_POR_DEFECTO.puntosFinal.join(', '))
   const [textoDorsales, setTextoDorsales] = useState('')
+  const [juegos, setJuegos] = useState<JuegoDorsales[]>(() => cargarJuegos())
+  const [juegoId, setJuegoId] = useState('')
+  const [viendoJuegos, setViendoJuegos] = useState(false)
+
+  if (viendoJuegos) {
+    return (
+      <PantallaJuegos
+        juegos={juegos}
+        alCambiar={(nuevos) => {
+          setJuegos(nuevos)
+          guardarJuegos(nuevos)
+        }}
+        alVolver={() => setViendoJuegos(false)}
+      />
+    )
+  }
 
   // Todo lo que sigue se recalcula en cada pulsación: React vuelve a ejecutar la función del componente.
   const intermedio = leerPuntos(puntosIntermedio)
@@ -55,18 +74,21 @@ export function CrearCarrera({ alCrear }: Props) {
     puntosFinal: final ?? [],
   }
   const { dorsales, errores: erroresDorsales } = leerDorsales(textoDorsales)
+  const juego = juegos.find((j) => j.id === juegoId) ?? null
+  const participantes = participantesConEquipo(dorsales, juego)
+  const delEquipo = participantes.filter((p) => p.nombre).length
 
   const camposVacios = vueltas === '' || primerSprint === ''
   const errores = camposVacios ? [] : validarConfiguracion(config)
   if (intermedio === null || final === null) errores.push('Los puntos deben ser números separados por comas.')
   errores.push(...erroresDorsales)
-  if (textoDorsales !== '' && dorsales.length < 2) errores.push('Hacen falta al menos dos dorsales.')
+  if ((textoDorsales !== '' || juego) && participantes.length < 2) errores.push('Hacen falta al menos dos dorsales.')
 
   const sprints = !camposVacios && errores.length === 0 ? calendarioSprints(config) : []
-  const sePuedeEmpezar = !camposVacios && errores.length === 0 && dorsales.length >= 2 && nombre.trim() !== ''
+  const sePuedeEmpezar = !camposVacios && errores.length === 0 && participantes.length >= 2 && nombre.trim() !== ''
 
   function empezar() {
-    alCrear(nuevaCarrera(nombre.trim(), config, dorsales))
+    alCrear(nuevaCarrera(nombre.trim(), config, participantes))
   }
 
   return (
@@ -116,6 +138,23 @@ export function CrearCarrera({ alCrear }: Props) {
           <input value={textoDorsales} onChange={(e) => setTextoDorsales(e.target.value)} placeholder="1-24" />
           <small>{T.dorsalesAyuda}</small>
         </label>
+
+        <label className="campo campo-ancho">
+          {T.equipo}
+          <span className="fila-equipo">
+            <select value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
+              <option value="">{T.sinEquipo}</option>
+              {juegos.map((j) => (
+                <option key={j.id} value={j.id}>
+                  {j.nombre}
+                </option>
+              ))}
+            </select>
+            <button type="button" onClick={() => setViendoJuegos(true)}>
+              {T.gestionarEquipos}
+            </button>
+          </span>
+        </label>
       </div>
 
       {errores.length > 0 && (
@@ -130,7 +169,9 @@ export function CrearCarrera({ alCrear }: Props) {
         <p className="resumen">
           {T.resumenSprints}{' '}
           {sprints.map((s) => (s.esFinal ? `${s.aFalta} (${T.final})` : s.aFalta)).join(', ')}.
-          {dorsales.length > 0 && ` ${dorsales.length} ${T.participantes}.`}
+          {participantes.length > 0 && ` ${participantes.length} ${T.participantes}`}
+          {delEquipo > 0 && ` (${delEquipo} ${T.delEquipo})`}
+          {participantes.length > 0 && '.'}
         </p>
       )}
 
