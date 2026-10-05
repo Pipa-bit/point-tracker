@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { borrarCarreraActual, cargarCarreraActual, cargarJuegos, guardarCarreraActual, guardarJuegos } from './almacen'
+import {
+  borrarCarreraActual,
+  borrarDelHistorial,
+  cargarCarreraActual,
+  cargarHistorial,
+  cargarJuegos,
+  guardarCarreraActual,
+  guardarEnHistorial,
+  guardarJuegos,
+} from './almacen'
 import { PUNTOS_POR_DEFECTO, type Carrera } from './modelo/tipos'
 
 /** Imita el localStorage del navegador con un Map. */
@@ -68,5 +77,26 @@ describe('almacén de juegos de dorsales', () => {
     expect(cargarJuegos(almacen)).toEqual([])
     almacen.setItem('point-tracker:juegos-dorsales', '{roto')
     expect(cargarJuegos(almacen)).toEqual([])
+  })
+})
+
+describe('historial', () => {
+  const otra: Carrera = { ...carrera, id: 'def', nombre: 'Otra' }
+
+  it('guarda la más reciente primero y sustituye en su sitio la que ya estaba', () => {
+    const almacen = almacenFalso()
+    guardarEnHistorial(carrera, almacen)
+    guardarEnHistorial(otra, almacen)
+    expect(cargarHistorial(almacen).map((c) => c.id)).toEqual(['def', 'abc'])
+    guardarEnHistorial({ ...carrera, nombre: 'Corregida' }, almacen)
+    expect(cargarHistorial(almacen).map((c) => c.nombre)).toEqual(['Otra', 'Corregida'])
+  })
+
+  it('borra solo la indicada', () => {
+    const almacen = almacenFalso()
+    guardarEnHistorial(carrera, almacen)
+    guardarEnHistorial(otra, almacen)
+    borrarDelHistorial('abc', almacen)
+    expect(cargarHistorial(almacen).map((c) => c.id)).toEqual(['def'])
   })
 })

@@ -22,6 +22,16 @@ export const TEXTOS = {
     gestionarEquipos: 'Gestionar equipos',
     delEquipo: 'del equipo',
   },
+  historialCarreras: {
+    abrir: (n: number) => `Carreras anteriores (${n})`,
+    titulo: 'Carreras anteriores',
+    ninguna: 'Todavía no hay ninguna carrera terminada.',
+    ganador: 'Gana',
+    volver: 'Volver',
+    borrar: 'Borrar del historial',
+    confirmarBorrar: (nombre: string) => `¿Borrar «${nombre}» del historial? No se puede deshacer.`,
+    guardada: 'Guardada en «Carreras anteriores».',
+  },
   juegos: {
     titulo: 'Equipos y dorsales',
     ayuda: 'Un juego por tipo de competición y temporada, con el dorsal de cada patinador del equipo.',

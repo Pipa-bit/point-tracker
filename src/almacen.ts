@@ -80,3 +80,37 @@ export function guardarJuegos(juegos: JuegoDorsales[], almacen = almacenPorDefec
     // Igual que al guardar la carrera.
   }
 }
+
+const CLAVE_HISTORIAL = 'point-tracker:historial'
+
+/** Carreras terminadas guardadas en el dispositivo, la más reciente primero. */
+export function cargarHistorial(almacen = almacenPorDefecto()): Carrera[] {
+  try {
+    const datos = JSON.parse(almacen?.getItem(CLAVE_HISTORIAL) ?? '[]')
+    return Array.isArray(datos) ? datos.filter((c) => typeof c?.id === 'string' && Array.isArray(c.sucesos)) : []
+  } catch {
+    return []
+  }
+}
+
+function escribirHistorial(carreras: Carrera[], almacen: Almacen | null): void {
+  try {
+    almacen?.setItem(CLAVE_HISTORIAL, JSON.stringify(carreras))
+  } catch {
+    // Igual que al guardar la carrera.
+  }
+}
+
+/** Guarda una carrera nueva al principio del historial. Si ya estaba (se ha corregido después), la sustituye en su sitio. */
+export function guardarEnHistorial(carrera: Carrera, almacen = almacenPorDefecto()): void {
+  const historial = cargarHistorial(almacen)
+  const yaEstaba = historial.some((c) => c.id === carrera.id)
+  escribirHistorial(yaEstaba ? historial.map((c) => (c.id === carrera.id ? carrera : c)) : [carrera, ...historial], almacen)
+}
+
+export function borrarDelHistorial(id: string, almacen = almacenPorDefecto()): void {
+  escribirHistorial(
+    cargarHistorial(almacen).filter((c) => c.id !== id),
+    almacen,
+  )
+}

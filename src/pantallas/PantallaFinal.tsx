@@ -18,9 +18,13 @@ interface Props {
   carrera: Carrera
   alCambiar: (carrera: Carrera) => void
   alSalir: () => void
+  /** 'historial' = se está viendo una carrera antigua: no se puede volver a ella para seguir anotando. */
+  modo?: 'actual' | 'historial'
+  /** Solo en el historial: quitarla de la lista. */
+  alBorrar?: () => void
 }
 
-export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
+export function PantallaFinal({ carrera, alCambiar, alSalir, modo = 'actual', alBorrar }: Props) {
   // Orden que se va tocando para deshacer el empate que se muestra ahora.
   const [ordenEmpate, setOrdenEmpate] = useState<Dorsal[]>([])
   const [copiado, setCopiado] = useState(false)
@@ -100,9 +104,7 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
     }
   }
 
-  function salir() {
-    if (window.confirm(TEXTOS.carrera.confirmarSalir)) alSalir()
-  }
+  const TH = TEXTOS.historialCarreras
 
   return (
     <main className="pantalla final">
@@ -166,8 +168,26 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
           // Borra el orden anotado para los empates y los vuelve a pedir.
           <button onClick={() => alCambiar({ ...carrera, llegadaFinalCompleta: [] })}>{T.rehacerEmpates}</button>
         )}
-        <button onClick={() => alCambiar(cambiarEstado(carrera, 'en-curso'))}>{T.volver}</button>
-        <button onClick={salir}>{TEXTOS.carrera.nuevaCarrera}</button>
+        {modo === 'actual' ? (
+          <>
+            <button onClick={() => alCambiar(cambiarEstado(carrera, 'en-curso'))}>{T.volver}</button>
+            {/* Ya está guardada en el historial, así que no hace falta confirmar. */}
+            <button onClick={alSalir}>{TEXTOS.carrera.nuevaCarrera}</button>
+            <p className="ayuda">{TH.guardada}</p>
+          </>
+        ) : (
+          <>
+            <button onClick={alSalir}>{TH.volver}</button>
+            <button
+              className="peligro"
+              onClick={() => {
+                if (window.confirm(TH.confirmarBorrar(carrera.nombre))) alBorrar?.()
+              }}
+            >
+              {TH.borrar}
+            </button>
+          </>
+        )}
       </div>
     </main>
   )
