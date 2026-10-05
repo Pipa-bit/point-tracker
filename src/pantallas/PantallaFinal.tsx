@@ -3,11 +3,12 @@
 // Si hay empates a puntos que la llegada conocida no resuelve, primero pide el orden en que cruzaron
 // la meta en la última vuelta. Después muestra la clasificación final y permite compartirla.
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { generarImagen } from '../imagenResultados'
 import { cambiarEstado, resolverDesempate } from '../modelo/acciones'
 import { calcularClasificacion } from '../modelo/clasificacion'
 import type { Carrera, Dorsal } from '../modelo/tipos'
-import { fechaLegible, textoResultados } from '../resultados'
+import { fechaLegible, resultados, textoResultados } from '../resultados'
 import { TEXTOS } from '../textos'
 
 const T = TEXTOS.final
@@ -23,6 +24,9 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
   // Orden que se va tocando para deshacer el empate que se muestra ahora.
   const [ordenEmpate, setOrdenEmpate] = useState<Dorsal[]>([])
   const [copiado, setCopiado] = useState(false)
+  // La imagen se prepara en cuanto cambian los resultados. Así, al pulsar el botón se comparte al instante:
+  // Safari solo deja compartir archivos justo después de un toque, sin esperas de por medio.
+  const [imagen, setImagen] = useState<File | null>(null)
 
   const { filas, desempatesPendientes } = calcularClasificacion(carrera)
   const empate = desempatesPendientes[0]
@@ -31,6 +35,17 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
   const noTerminan = filas.filter((f) => f.estado !== 'en-carrera')
   const texto = textoResultados(carrera)
   const estados: Record<string, string> = TC
+
+  useEffect(() => {
+    let vigente = true
+    generarImagen(resultados(carrera)).then((blob) => {
+      if (vigente && blob) setImagen(new File([blob], `resultados-${carrera.fecha}.png`, { type: 'image/png' }))
+    })
+    // Si los resultados cambian antes de terminar de dibujar, se descarta la imagen vieja.
+    return () => {
+      vigente = false
+    }
+  }, [carrera])
 
   function tocarEmpatado(dorsal: Dorsal) {
     if (!empate || ordenEmpate.includes(dorsal)) return
@@ -55,6 +70,24 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
       }
     } else {
       window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank')
+    }
+  }
+
+  async function compartirImagen() {
+    if (!imagen) return
+    if (navigator.canShare?.({ files: [imagen] })) {
+      try {
+        await navigator.share({ files: [imagen] })
+      } catch {
+        // Menú cerrado sin compartir.
+      }
+    } else {
+      // Sin menú de compartir (p. ej. en un ordenador): se descarga la imagen.
+      const enlace = document.createElement('a')
+      enlace.href = URL.createObjectURL(imagen)
+      enlace.download = imagen.name
+      enlace.click()
+      URL.revokeObjectURL(enlace.href)
     }
   }
 
@@ -124,6 +157,9 @@ export function PantallaFinal({ carrera, alCambiar, alSalir }: Props) {
       <div className="acciones">
         <button className="boton-principal" onClick={compartir}>
           {T.compartir}
+        </button>
+        <button className="boton-principal" onClick={compartirImagen} disabled={!imagen}>
+          {T.compartirImagen}
         </button>
         <button onClick={copiar}>{copiado ? T.copiado : T.copiar}</button>
         {(carrera.llegadaFinalCompleta?.length ?? 0) > 0 && (

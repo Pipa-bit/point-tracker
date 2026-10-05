@@ -69,6 +69,7 @@ export const TEXTOS = {
     rehacerEmpates: 'Corregir desempates',
     pendiente: 'Faltan empates por resolver: el orden de los empatados puede no ser el definitivo.',
     compartir: 'Compartir (WhatsApp…)',
+    compartirImagen: 'Compartir como imagen',
     copiar: 'Copiar texto',
     copiado: 'Copiado',
     volver: 'Volver a la carrera',
