@@ -4,6 +4,7 @@
 // al volver a abrirla la carrera sigue donde estaba. Nunca lanza errores: si el
 // almacenamiento no está disponible (p. ej. navegación privada), la web sigue funcionando sin guardar.
 
+import type { JuegoDorsales } from './modelo/equipo'
 import type { Carrera } from './modelo/tipos'
 
 const CLAVE = 'point-tracker:carrera-actual'
@@ -58,4 +59,24 @@ export function borrarCarreraActual(almacen = almacenPorDefecto()): void {
  */
 export function pedirAlmacenamientoPersistente(): void {
   navigator.storage?.persist?.().catch(() => {})
+}
+
+const CLAVE_JUEGOS = 'point-tracker:juegos-dorsales'
+
+/** Juegos de dorsales del equipo guardados en el dispositivo (lista vacía si no hay o están dañados). */
+export function cargarJuegos(almacen = almacenPorDefecto()): JuegoDorsales[] {
+  try {
+    const datos = JSON.parse(almacen?.getItem(CLAVE_JUEGOS) ?? '[]')
+    return Array.isArray(datos) ? datos.filter((j) => typeof j?.id === 'string' && Array.isArray(j.miembros)) : []
+  } catch {
+    return []
+  }
+}
+
+export function guardarJuegos(juegos: JuegoDorsales[], almacen = almacenPorDefecto()): void {
+  try {
+    almacen?.setItem(CLAVE_JUEGOS, JSON.stringify(juegos))
+  } catch {
+    // Igual que al guardar la carrera.
+  }
 }

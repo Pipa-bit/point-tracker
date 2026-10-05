@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { borrarCarreraActual, cargarCarreraActual, guardarCarreraActual } from './almacen'
+import { borrarCarreraActual, cargarCarreraActual, cargarJuegos, guardarCarreraActual, guardarJuegos } from './almacen'
 import { PUNTOS_POR_DEFECTO, type Carrera } from './modelo/tipos'
 
 /** Imita el localStorage del navegador con un Map. */
@@ -52,5 +52,21 @@ describe('almacén de la carrera actual', () => {
   it('si no hay almacenamiento disponible no falla', () => {
     expect(() => guardarCarreraActual(carrera, null)).not.toThrow()
     expect(cargarCarreraActual(null)).toBeNull()
+  })
+})
+
+describe('almacén de juegos de dorsales', () => {
+  it('lo que se guarda se recupera igual', () => {
+    const almacen = almacenFalso()
+    const juegos = [{ id: 'j', nombre: 'Liga 2026', miembros: [{ dorsal: 12, nombre: 'Adrián' }] }]
+    guardarJuegos(juegos, almacen)
+    expect(cargarJuegos(almacen)).toEqual(juegos)
+  })
+
+  it('sin nada guardado o con datos dañados devuelve una lista vacía', () => {
+    const almacen = almacenFalso()
+    expect(cargarJuegos(almacen)).toEqual([])
+    almacen.setItem('point-tracker:juegos-dorsales', '{roto')
+    expect(cargarJuegos(almacen)).toEqual([])
   })
 })
