@@ -20,6 +20,16 @@ export const TEXTOS = {
   },
   carrera: {
     nuevaCarrera: 'Nueva carrera',
-    proximamente: 'La pantalla para registrar los sprints llega en el siguiente paso.',
+    sprintAFalta: 'Sprint a falta de',
+    sprintFinal: 'Sprint final',
+    quedan: 'Sprints que quedan',
+    puesto: (n: number) => `${n}.º`,
+    deshacer: 'Deshacer',
+    sinRegistrar: 'Sprint sin registrar',
+    ultimo: 'Último registrado',
+    aFalta: 'a falta de',
+    vacio: 'sin registrar',
+    terminada: 'Todos los sprints registrados',
+    confirmarSalir: '¿Salir de esta carrera? Todavía no se guarda y se perderá.',
   },
 }

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import type { Carrera } from './modelo/tipos'
 import { CrearCarrera } from './pantallas/CrearCarrera'
-import { TEXTOS } from './textos'
+import { PantallaCarrera } from './pantallas/PantallaCarrera'
 
 function App() {
   // null = todavía no hay carrera; se muestra la pantalla de crearla.
@@ -11,21 +11,7 @@ function App() {
   if (carrera === null) {
     return <CrearCarrera alCrear={setCarrera} />
   }
-
-  // Provisional hasta el paso 7: solo confirma que la carrera se ha creado bien.
-  return (
-    <main className="pantalla">
-      <h1>{carrera.nombre}</h1>
-      <p>
-        {carrera.participantes.length} {TEXTOS.crearCarrera.participantes}, {carrera.configuracion.vueltasTotales}{' '}
-        {TEXTOS.crearCarrera.vueltasTotales.toLowerCase()}.
-      </p>
-      <p>{TEXTOS.carrera.proximamente}</p>
-      <button className="boton-principal" onClick={() => setCarrera(null)}>
-        {TEXTOS.carrera.nuevaCarrera}
-      </button>
-    </main>
-  )
+  return <PantallaCarrera carrera={carrera} alCambiar={setCarrera} alSalir={() => setCarrera(null)} />
 }
 
 export default App
