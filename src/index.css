@@ -275,3 +275,82 @@ button {
   font-size: 15px;
   color: var(--suave);
 }
+
+/* ---------- Incidencias ---------- */
+
+/* Evita que el toque largo seleccione el número o abra el menú de Safari. */
+.dorsal {
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Dorsales que ya no están en carrera: tachados y sin poder tocarse. */
+.dorsal.fuera {
+  border-style: dashed;
+  color: var(--suave);
+  text-decoration: line-through;
+}
+
+.dorsal.fuera .marca {
+  text-decoration: none;
+}
+
+/* En el modo "la escapada dobla al pelotón", los escapados elegidos van en azul. */
+.dorsal.escapado {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: #fff;
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 15px;
+  color: var(--suave);
+}
+
+.menu-fondo {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.menu {
+  background: var(--fondo);
+  border: 2px solid var(--borde);
+  border-radius: 12px;
+  padding: 16px;
+  width: min(420px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.menu button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 22px;
+  text-align: left;
+}
+
+.menu button small {
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--suave);
+}
+
+.menu .cancelar {
+  align-items: center;
+  border-color: var(--suave);
+  color: var(--suave);
+}
