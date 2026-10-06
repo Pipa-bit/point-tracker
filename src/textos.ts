@@ -55,6 +55,9 @@ export const TEXTOS = {
   },
   carrera: {
     nuevaCarrera: 'Nueva carrera',
+    vista: 'Ordenar la rejilla',
+    porEquipos: 'Por equipos',
+    porDorsal: 'Por dorsal',
     sprintAFalta: 'Sprint a falta de',
     sprintFinal: 'Sprint final',
     quedan: 'Quedan',

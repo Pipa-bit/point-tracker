@@ -5,9 +5,11 @@ import {
   cargarCarreraActual,
   cargarHistorial,
   cargarJuegos,
+  cargarVista,
   guardarCarreraActual,
   guardarEnHistorial,
   guardarJuegos,
+  guardarVista,
 } from './almacen'
 import { PUNTOS_POR_DEFECTO, type Carrera } from './modelo/tipos'
 
@@ -98,5 +100,15 @@ describe('historial', () => {
     guardarEnHistorial(otra, almacen)
     borrarDelHistorial('abc', almacen)
     expect(cargarHistorial(almacen).map((c) => c.id)).toEqual(['def'])
+  })
+})
+
+describe('vista de la rejilla', () => {
+  it('por equipos si no se ha elegido nunca, y recuerda la elegida', () => {
+    const almacen = almacenFalso()
+    expect(cargarVista(almacen)).toBe('equipos')
+    guardarVista('dorsal', almacen)
+    expect(cargarVista(almacen)).toBe('dorsal')
+    expect(cargarVista(null)).toBe('equipos')
   })
 })

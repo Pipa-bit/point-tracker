@@ -109,3 +109,23 @@ export function coloresClub(codigo: string | undefined): ColoresBoton | null {
     raya: secundario && secundario !== BLANCO ? secundario : color,
   }
 }
+
+export interface GrupoClub<P> {
+  club: string
+  participantes: P[]
+}
+
+/**
+ * Reparte a los participantes por club para la rejilla en columnas: nuestro club primero y el resto
+ * en el orden en que aparecen. Devuelve null si nadie tiene club (carreras con los dorsales escritos a mano).
+ */
+export function agruparPorClub<P extends { club?: string; nombre?: string }>(participantes: P[]): GrupoClub<P>[] | null {
+  if (!participantes.some((p) => p.club !== undefined)) return null
+  const grupos = new Map<string, P[]>()
+  for (const p of participantes) {
+    const club = clubDe(p) ?? ''
+    grupos.set(club, [...(grupos.get(club) ?? []), p])
+  }
+  const lista = [...grupos].map(([club, miembros]) => ({ club, participantes: miembros }))
+  return [...lista.filter((g) => g.club === NUESTRO_CLUB), ...lista.filter((g) => g.club !== NUESTRO_CLUB)]
+}

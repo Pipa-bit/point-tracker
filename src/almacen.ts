@@ -114,3 +114,25 @@ export function borrarDelHistorial(id: string, almacen = almacenPorDefecto()): v
     almacen,
   )
 }
+
+/** Cómo se ordena la rejilla de la carrera: una columna por club o todos por número de dorsal. */
+export type VistaRejilla = 'equipos' | 'dorsal'
+
+const CLAVE_VISTA = 'point-tracker:vista-rejilla'
+
+/** La última vista elegida en este dispositivo; por equipos si no se ha elegido nunca. */
+export function cargarVista(almacen = almacenPorDefecto()): VistaRejilla {
+  try {
+    return almacen?.getItem(CLAVE_VISTA) === 'dorsal' ? 'dorsal' : 'equipos'
+  } catch {
+    return 'equipos'
+  }
+}
+
+export function guardarVista(vista: VistaRejilla, almacen = almacenPorDefecto()): void {
+  try {
+    almacen?.setItem(CLAVE_VISTA, vista)
+  } catch {
+    // Igual que al guardar la carrera.
+  }
+}
