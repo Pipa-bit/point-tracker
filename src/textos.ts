@@ -55,7 +55,9 @@ export const TEXTOS = {
     nuevaCarrera: 'Nueva carrera',
     sprintAFalta: 'Sprint a falta de',
     sprintFinal: 'Sprint final',
-    quedan: 'Sprints que quedan',
+    quedan: 'Quedan',
+    enJuego: 'En juego',
+    ultimaVuelta: 'Última vuelta',
     puesto: (n: number) => `${n}.º`,
     deshacer: 'Deshacer',
     sinRegistrar: 'Sprint sin registrar',
@@ -78,7 +80,6 @@ export const TEXTOS = {
     tocaEscapados: 'Toca los dorsales de la escapada',
     escapadaDetalle: 'Todos los demás pierden sus puntos y siguen en carrera.',
     confirmar: 'Confirmar',
-    fuera: 'fuera',
   },
   historial: {
     abrir: 'Historial y correcciones',
@@ -121,5 +122,8 @@ export const TEXTOS = {
     abandono: 'abandono',
     descalificado: 'descalificado',
     notaAsegurado: '* Salvo doblaje o descalificación.',
+    columnas: 'pts · al líder',
   },
+  // Códigos cortos de la torre para los que no terminan, como el OUT de la F1.
+  codigos: { eliminado: 'DOB', abandono: 'ABA', descalificado: 'DSQ' },
 }

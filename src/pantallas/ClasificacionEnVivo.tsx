@@ -1,4 +1,5 @@
-// Clasificación en directo para el panel de la carrera: puntos, distancia al líder y si aún puede alcanzarle.
+// Clasificación en directo para el panel de la carrera, al estilo de la torre de tiempos de la F1:
+// puesto, dorsal, nombre, puntos y distancia al líder. Los que no terminan van abajo con un código corto.
 
 import type { CuentasEnDirecto } from '../modelo/cuentas'
 import type { EstadoPatinador } from '../modelo/clasificacion'
@@ -6,61 +7,55 @@ import { TEXTOS } from '../textos'
 
 const T = TEXTOS.clasificacion
 
-const ESTADOS: Record<Exclude<EstadoPatinador, 'en-carrera'>, string> = {
-  eliminado: T.eliminado,
-  abandono: T.abandono,
-  descalificado: T.descalificado,
-}
-
 export function ClasificacionEnVivo({ cuentas }: { cuentas: CuentasEnDirecto }) {
-  const { clasificacion, lider, liderAsegurado, puntosEnJuego, porPatinador } = cuentas
-  // Solo se listan los que tienen puntos: el resto empata a 0 y ocuparía media pantalla.
-  const conPuntos = clasificacion.filas.filter((f) => f.estado === 'en-carrera' && f.puntos > 0)
+  const { clasificacion, lider, liderAsegurado, porPatinador } = cuentas
+  // Se listan los que tienen puntos y, aunque tengan 0, los del equipo (son los que tienen nombre).
+  // El resto empata a 0 y ocuparía media pantalla.
+  const enTorre = clasificacion.filas.filter((f) => f.estado === 'en-carrera' && (f.puntos > 0 || f.nombre))
   const noTerminan = clasificacion.filas.filter((f) => f.estado !== 'en-carrera')
 
   return (
-    <section className="clasificacion" aria-label={T.titulo}>
-      <h2>{T.titulo}</h2>
-      <p>
-        {T.enJuego}: <strong>{puntosEnJuego}</strong>
-      </p>
+    <section className="tarjeta torre" aria-label={T.titulo}>
+      <header className="torre-cabecera">
+        <h2>{T.titulo}</h2>
+        <span className="etiqueta">{T.columnas}</span>
+      </header>
 
-      {conPuntos.length === 0 ? (
-        <p>{T.nadie}</p>
-      ) : (
-        <table>
-          <tbody>
-            {conPuntos.map((fila) => {
-              const cuentasFila = porPatinador.find((c) => c.dorsal === fila.dorsal)!
-              const esLider = fila.dorsal === lider
-              return (
-                <tr key={fila.dorsal} className={cuentasFila.puedeAlcanzarLider || esLider ? '' : 'sin-opciones'}>
-                  <td>{fila.puesto}.º</td>
-                  <td className="nombre">{fila.nombre ?? fila.dorsal}</td>
-                  <td className="puntos">{fila.puntos}</td>
-                  <td className="distancia">
-                    {esLider
-                      ? liderAsegurado
-                        ? T.asegurado
-                        : T.lider
-                      : cuentasFila.puedeAlcanzarLider
-                        ? `−${cuentasFila.puntosHastaLider}`
-                        : T.fueraDeAlcance}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      )}
+      <div className="torre-filas">
+        {enTorre.length === 0 && noTerminan.length === 0 && <p className="ayuda">{T.nadie}</p>}
+
+        {enTorre.map((fila) => {
+          const cuentasFila = porPatinador.find((c) => c.dorsal === fila.dorsal)!
+          const esLider = fila.dorsal === lider
+          let distancia = <span className="distancia">−{cuentasFila.puntosHastaLider}</span>
+          if (esLider) distancia = <span className="distancia lider">{liderAsegurado ? T.asegurado : T.lider}</span>
+          else if (!cuentasFila.puedeAlcanzarLider) distancia = <span className="distancia sin-opciones">{T.fueraDeAlcance}</span>
+          return (
+            <div key={fila.dorsal} className={fila.nombre ? 'fila-torre equipo' : 'fila-torre'}>
+              {/* Con 0 puntos no hay puesto: todos los que no han puntuado empatan. */}
+              <span className="puesto">{fila.puntos > 0 ? fila.puesto : '·'}</span>
+              <span className="raya" />
+              <span className="numero">{fila.dorsal}</span>
+              <span className="nombre">{fila.nombre}</span>
+              <span className="puntos">{fila.puntos}</span>
+              {distancia}
+            </div>
+          )
+        })}
+
+        {noTerminan.map((fila) => (
+          <div key={fila.dorsal} className={fila.nombre ? 'fila-torre fuera equipo' : 'fila-torre fuera'}>
+            <span className="puesto" />
+            <span className="raya" />
+            <span className="numero">{fila.dorsal}</span>
+            <span className="nombre">{fila.nombre}</span>
+            <span className="puntos">0</span>
+            <span className="distancia">{TEXTOS.codigos[fila.estado as Exclude<EstadoPatinador, 'en-carrera'>]}</span>
+          </div>
+        ))}
+      </div>
 
       {liderAsegurado && <p className="nota">{T.notaAsegurado}</p>}
-
-      {noTerminan.length > 0 && (
-        <p className="no-terminan">
-          {T.noTerminan}: {noTerminan.map((f) => `${f.nombre ?? f.dorsal} (${ESTADOS[f.estado as keyof typeof ESTADOS]})`).join(', ')}
-        </p>
-      )}
 
       {clasificacion.avisos.length > 0 && (
         <ul className="errores">

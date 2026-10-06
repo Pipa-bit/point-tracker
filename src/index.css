@@ -1,19 +1,67 @@
-/* Tema claro de alto contraste: pensado para leerse a pleno sol. */
+/* Estilo inspirado en las retransmisiones de la F1, en tema claro para leerse a pleno sol:
+   paneles blancos con esquinas redondeadas sobre gris frío, tipografía estrecha en negrita y color
+   solo para lo que importa. Los colores salen del escudo del club. */
+
+/* Titillium Web va dentro de la web (no se descarga de Google), así funciona sin conexión. */
+@import '@fontsource/titillium-web/latin-400.css';
+@import '@fontsource/titillium-web/latin-600.css';
+@import '@fontsource/titillium-web/latin-700.css';
+@import '@fontsource/titillium-web/latin-900.css';
+
 :root {
-  --texto: #000;
-  --fondo: #fff;
-  --borde: #000;
-  --suave: #555;
-  --acento: #0047b3;
+  --fondo: #e9ecf2; /* gris frío, con un punto del azul del escudo */
+  --panel: #fff;
+  --texto: #0b1020;
+  --suave: #5a6276;
+  --linea: #d3d8e2;
+  --borde: #8a93a6;
+  --apagado: #9aa1b2;
+  --tecla: #f6f7fa; /* fondo de los botones de dorsal */
+  --acento: #d7141a; /* rojo de la llama */
+  --marino: #0a1f7a; /* azul del escudo */
+  --equipo: #0e5f2c; /* verde del uniforme, más oscuro que el del escudo */
+  --equipo-suave: #e3f1e7;
   --error: #b00020;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --aviso: #ffe066;
+  --sobre-color: #fff; /* texto encima de rojo, azul o verde */
+  --sombra: 0 1px 2px rgb(11 16 32 / 0.08), 0 4px 14px rgb(11 16 32 / 0.06);
+  --radio: 14px;
+  font-family: 'Titillium Web', 'Arial Narrow', system-ui, sans-serif;
   font-size: 18px;
   color: var(--texto);
   background: var(--fondo);
 }
 
+/* Tema oscuro, preparado para cuando haga falta (aún no hay botón para activarlo). */
+:root[data-theme='dark'] {
+  --fondo: #0c0f17;
+  --panel: #161b27;
+  --texto: #f2f4f8;
+  --suave: #9aa3b8;
+  --linea: #2a3142;
+  --borde: #4a5368;
+  --apagado: #5b6377;
+  --tecla: #1e2433;
+  --acento: #ff3b3f;
+  --marino: #7f95ff;
+  --equipo: #3ccb6e;
+  --equipo-suave: #13301f;
+  --error: #ff6b7d;
+  --aviso: #5c4a00;
+  --sobre-color: #0c0f17;
+  --sombra: none;
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
+  background: var(--fondo);
+}
+
+/* Números en columnas del mismo ancho, para que no bailen al cambiar. */
+.carrera,
+.resultados {
+  font-variant-numeric: tabular-nums;
 }
 
 .pantalla {
@@ -59,17 +107,30 @@ input {
   font-size: 22px;
   padding: 12px;
   border: 2px solid var(--borde);
-  border-radius: 8px;
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--texto);
 }
 
 button {
   font: inherit;
   font-weight: 600;
   padding: 14px 18px;
-  border: 2px solid var(--borde);
-  border-radius: 8px;
-  background: var(--fondo);
+  border: 1px solid var(--linea);
+  border-radius: 12px;
+  background: var(--panel);
   color: var(--texto);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--marino);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.4;
 }
 
 /* Botones que funcionan como interruptor: el elegido va relleno. */
@@ -84,20 +145,18 @@ button {
 
 .selector button[aria-pressed='true'] {
   background: var(--texto);
-  color: var(--fondo);
+  border-color: var(--texto);
+  color: var(--panel);
 }
 
 .boton-principal {
   width: 100%;
   margin-top: 16px;
-  font-size: 24px;
+  font-size: 22px;
+  font-weight: 900;
   background: var(--acento);
   border-color: var(--acento);
-  color: #fff;
-}
-
-.boton-principal:disabled {
-  opacity: 0.35;
+  color: var(--sobre-color);
 }
 
 .errores {
@@ -109,210 +168,484 @@ button {
   font-size: 20px;
 }
 
+/* Piezas comunes: panel blanco, etiqueta pequeña en mayúsculas y botón tipo píldora. */
+.tarjeta {
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+}
+
+.etiqueta {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--suave);
+}
+
+.chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.ayuda {
+  margin: 0;
+  font-size: 14px;
+  color: var(--suave);
+}
+
 /* ---------- Pantalla de la carrera ---------- */
 
-/* Rejilla a la izquierda (lo que más se toca) y panel estrecho a la derecha. */
+/* Rejilla a la izquierda (lo que más se toca) y columna a la derecha con el sprint y la torre. */
 .carrera {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 16px;
-  padding: 12px;
+  grid-template-columns: 1fr 380px;
+  gap: 12px;
+  padding: 12px 16px;
   height: 100dvh;
   box-sizing: border-box;
 }
 
-.rejilla {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  grid-auto-rows: 88px;
+.columna-rejilla {
+  display: flex;
+  flex-direction: column;
   gap: 10px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Delante del nombre de la carrera, una franja con los tres colores del escudo. */
+.barra h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra h1::before {
+  content: '';
+  flex-shrink: 0;
+  width: 6px;
+  height: 22px;
+  border-radius: 2px;
+  background: linear-gradient(var(--acento) 0 33%, var(--marino) 33% 66%, var(--equipo) 66%);
+}
+
+/* Seis columnas que llenan el alto; con muchos participantes, la rejilla se desplaza. */
+.rejilla {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: minmax(72px, 1fr);
+  gap: 8px;
   overflow-y: auto;
-  align-content: start;
 }
 
 .dorsal {
   position: relative;
-  font-size: 34px;
   padding: 0;
+  min-height: 72px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--tecla);
+  box-shadow: var(--sombra);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 900;
+  transition: transform 0.08s;
   /* Evita el retardo y el zoom del doble toque en iPad. */
   touch-action: manipulation;
+  /* Evita que el toque largo seleccione el número o abra el menú de Safari. */
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
+.dorsal:active {
+  transform: scale(0.96);
+}
+
+/* Los del equipo, en verde con una raya a la izquierda, como el color de escudería. */
+.dorsal.equipo {
+  background: var(--equipo-suave);
+  border-color: var(--equipo);
+  color: var(--equipo);
+}
+
+.dorsal.equipo::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 5px;
+  border-radius: 0 3px 3px 0;
+  background: var(--equipo);
+}
+
+.dorsal .nombre-dorsal {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* El dorsal tocado se pone en rojo con su puesto en la esquina. */
 .dorsal[aria-pressed='true'] {
-  background: var(--texto);
-  color: var(--fondo);
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-color);
+}
+
+.dorsal[aria-pressed='true']::before {
+  background: var(--sobre-color);
 }
 
 .dorsal .marca {
   position: absolute;
   top: 4px;
-  right: 6px;
-  font-size: 16px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+/* Dorsales que ya no están en carrera: apagados, con borde discontinuo y sin poder tocarse. */
+.dorsal.fuera {
+  background: transparent;
+  border: 2px dashed var(--linea);
+  box-shadow: none;
+  color: var(--apagado);
+  opacity: 1;
+}
+
+.dorsal.fuera::before {
+  display: none;
+}
+
+/* En el modo "la escapada dobla al pelotón", los escapados elegidos van en azul. */
+.dorsal.escapado {
+  background: var(--marino);
+  border-color: var(--marino);
+  color: var(--sobre-color);
+}
+
+.herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.herramientas button {
+  flex: 1;
+  min-width: 160px;
+  padding: 12px;
+  font-size: 15px;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
+  min-width: 0;
+  min-height: 0;
 }
 
-.panel h1 {
-  font-size: 20px;
-  margin: 0;
+.sprint {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
 }
 
-.panel h2 {
-  font-size: 26px;
+.sprint h2 {
   margin: 0;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.sprint .boton-principal {
+  margin-top: 0;
+}
+
+.cabecera-sprint {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* El número de vueltas que faltan, enorme, como el contador de vueltas de la F1. */
+.a-falta {
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.a-falta.final {
+  font-size: 34px;
+  color: var(--acento);
+}
+
+.datos {
+  display: flex;
+  gap: 16px;
+  text-align: right;
+}
+
+.datos b {
+  display: block;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
 }
 
 .huecos {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
 }
 
 .huecos li {
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  align-items: center;
-  border: 2px solid var(--borde);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 2px dashed var(--linea);
+  border-radius: 10px;
+}
+
+.huecos li.lleno {
+  border-style: solid;
+  border-color: var(--acento);
 }
 
 .huecos strong {
-  font-size: 30px;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.huecos small {
+  font-weight: 700;
+  color: var(--suave);
 }
 
 .boton-deshacer {
-  font-size: 24px;
-  padding: 18px;
-  background: var(--error);
-  border-color: var(--error);
-  color: #fff;
-}
-
-.boton-deshacer:disabled,
-.panel button:disabled {
-  opacity: 0.35;
+  min-height: 56px;
+  border: 0;
+  background: var(--marino);
+  color: var(--sobre-color);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 /* El último sprint guardado se resalta unos segundos para confirmar que se ha anotado. */
 .ultimo {
   margin: 0;
-  padding: 8px;
+  padding: 6px 8px;
   border-radius: 8px;
+  font-size: 15px;
+  color: var(--suave);
   animation: aviso 4s ease-out;
+}
+
+.ultimo b {
+  color: var(--texto);
 }
 
 @keyframes aviso {
   0%,
   60% {
-    background: #ffe066;
+    background: var(--aviso);
   }
   100% {
     background: transparent;
   }
 }
 
-/* En móvil en vertical, el panel pasa debajo. */
-@media (max-width: 700px) {
+.escapados {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+/* Mientras se corrige un sprint del historial, la tarjeta lo indica en amarillo. */
+.sprint.corrigiendo {
+  background: var(--aviso);
+}
+
+/* ---------- Torre de clasificación ---------- */
+
+.torre {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.torre-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 10px 14px 6px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.torre-cabecera h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.torre-filas {
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.torre .ayuda {
+  padding: 10px 14px;
+}
+
+/* Puesto · raya del equipo · dorsal · nombre · puntos · distancia al líder */
+.fila-torre {
+  display: grid;
+  grid-template-columns: 26px 6px 40px 1fr 36px 92px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+}
+
+.fila-torre:nth-child(odd) {
+  background: color-mix(in srgb, var(--fondo) 45%, transparent);
+}
+
+.fila-torre .puesto {
+  text-align: right;
+  font-weight: 700;
+  color: var(--suave);
+}
+
+.fila-torre .raya {
+  height: 18px;
+  border-radius: 2px;
+}
+
+.fila-torre.equipo .raya {
+  background: var(--equipo);
+}
+
+.fila-torre .numero,
+.fila-torre .puntos {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.fila-torre .puntos,
+.fila-torre .distancia {
+  text-align: right;
+}
+
+.fila-torre .nombre {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fila-torre.equipo .nombre {
+  color: var(--equipo);
+  font-weight: 700;
+}
+
+.fila-torre .distancia {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fila-torre .distancia.lider {
+  color: var(--acento);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Quien ya no puede alcanzar al líder, y quien ya no corre, se ven apagados. */
+.fila-torre .distancia.sin-opciones,
+.fila-torre.fuera,
+.fila-torre.fuera .nombre {
+  color: var(--apagado);
+}
+
+.fila-torre.fuera .distancia {
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.torre .nota {
+  margin: 0;
+  padding: 6px 14px 10px;
+  font-size: 14px;
+  color: var(--suave);
+}
+
+.torre .errores {
+  margin: 0;
+  padding: 6px 14px 10px 32px;
+  font-size: 15px;
+}
+
+/* En móvil en vertical, la columna pasa debajo y la rejilla se queda en cuatro columnas. */
+@media (max-width: 820px) {
   .carrera {
     grid-template-columns: 1fr;
     height: auto;
   }
-}
 
-/* ---------- Clasificación en vivo ---------- */
-
-.clasificacion h2 {
-  font-size: 22px;
-}
-
-.clasificacion p {
-  margin: 4px 0;
-}
-
-.clasificacion table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 20px;
-}
-
-.clasificacion td {
-  padding: 6px 4px;
-  border-bottom: 1px solid var(--borde);
-}
-
-.clasificacion .nombre {
-  font-weight: 700;
-}
-
-.clasificacion .puntos {
-  text-align: right;
-  font-weight: 700;
-  font-size: 24px;
-}
-
-.clasificacion .distancia {
-  text-align: right;
-  font-size: 16px;
-}
-
-/* Quien ya no puede alcanzar al líder se ve atenuado. */
-.clasificacion .sin-opciones {
-  color: var(--suave);
-}
-
-.clasificacion .nota,
-.clasificacion .no-terminan {
-  font-size: 15px;
-  color: var(--suave);
+  .rejilla {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* ---------- Incidencias ---------- */
 
-/* Evita que el toque largo seleccione el número o abra el menú de Safari. */
-.dorsal {
-  -webkit-touch-callout: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Dorsales que ya no están en carrera: tachados y sin poder tocarse. */
-.dorsal.fuera {
-  border-style: dashed;
-  color: var(--suave);
-  text-decoration: line-through;
-}
-
-.dorsal.fuera .marca {
-  text-decoration: none;
-}
-
-/* En el modo "la escapada dobla al pelotón", los escapados elegidos van en azul. */
-.dorsal.escapado {
-  background: var(--acento);
-  border-color: var(--acento);
-  color: #fff;
-}
-
-.ayuda {
-  margin: 0;
-  font-size: 15px;
-  color: var(--suave);
-}
-
 .menu-fondo {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 0.5);
+  background: rgb(11 16 32 / 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -320,39 +653,50 @@ button {
 }
 
 .menu {
-  background: var(--fondo);
-  border: 2px solid var(--borde);
-  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
   padding: 16px;
   width: min(420px, 90vw);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .menu h2 {
-  margin: 0;
-  font-size: 28px;
+  margin: 0 0 4px;
+  font-size: 26px;
+  font-weight: 900;
 }
 
 .menu button {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  font-size: 22px;
+  background: var(--tecla);
+  font-size: 20px;
+  font-weight: 700;
   text-align: left;
 }
 
 .menu button small {
   font-weight: 400;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--suave);
 }
 
 .menu .cancelar {
   align-items: center;
-  border-color: var(--suave);
+  background: transparent;
   color: var(--suave);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 /* ---------- Historial ---------- */
@@ -398,7 +742,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  background: #ffe066;
+  background: var(--aviso);
   border-radius: 8px;
   padding: 8px;
 }
@@ -410,7 +754,7 @@ button {
 }
 
 .empate {
-  background: #ffe066;
+  background: var(--aviso);
   border-radius: 8px;
   padding: 12px;
   margin: 12px 0;
@@ -463,8 +807,8 @@ select {
   font-size: 22px;
   padding: 12px;
   border: 2px solid var(--borde);
-  border-radius: 8px;
-  background: var(--fondo);
+  border-radius: 10px;
+  background: var(--panel);
   color: var(--texto);
 }
 
