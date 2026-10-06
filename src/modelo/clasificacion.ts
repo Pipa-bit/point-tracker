@@ -14,6 +14,7 @@ export type EstadoPatinador = 'en-carrera' | 'eliminado' | 'abandono' | 'descali
 export interface FilaClasificacion {
   dorsal: Dorsal
   nombre?: string
+  club?: string
   puntos: number
   /** Puesto en la clasificación; null si no termina. Los empatados comparten puesto. */
   puesto: number | null
@@ -111,7 +112,7 @@ export function calcularClasificacion(carrera: DatosCarrera): Clasificacion {
 
   const filas: FilaClasificacion[] = participantes.map((p) => {
     const { puntos, estado } = patinadores.get(p.dorsal)!
-    return { dorsal: p.dorsal, nombre: p.nombre, puntos, puesto: null, estado }
+    return { dorsal: p.dorsal, nombre: p.nombre, club: p.club, puntos, puesto: null, estado }
   })
   const enCarrera = filas.filter((f) => f.estado === 'en-carrera')
   const noTerminan = filas.filter((f) => f.estado !== 'en-carrera').sort((a, b) => a.dorsal - b.dorsal)

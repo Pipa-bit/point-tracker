@@ -24,6 +24,8 @@
   --error: #b00020;
   --aviso: #ffe066;
   --sobre-color: #fff; /* texto encima de rojo, azul o verde */
+  --tocado: #0b1020; /* dorsal tocado en el sprint */
+  --sobre-tocado: #fff;
   --sombra: 0 1px 2px rgb(11 16 32 / 0.08), 0 4px 14px rgb(11 16 32 / 0.06);
   --radio: 14px;
   font-family: 'Titillium Web', 'Arial Narrow', system-ui, sans-serif;
@@ -49,6 +51,8 @@
   --error: #ff6b7d;
   --aviso: #5c4a00;
   --sobre-color: #0c0f17;
+  --tocado: #f2f4f8;
+  --sobre-tocado: #0c0f17;
   --sombra: none;
   color-scheme: dark;
 }
@@ -248,26 +252,30 @@ button:disabled {
   background: linear-gradient(var(--acento) 0 33%, var(--marino) 33% 66%, var(--equipo) 66%);
 }
 
-/* Seis columnas que llenan el alto; con muchos participantes, la rejilla se desplaza. */
+/* Las columnas (--columnas) las calcula PantallaCarrera según los participantes, para que quepan todos
+   llenando el alto. Si aun así no caben, la rejilla se desplaza. */
 .rejilla {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-auto-rows: minmax(72px, 1fr);
+  grid-template-columns: repeat(var(--columnas, 6), 1fr);
+  grid-auto-rows: minmax(56px, 1fr);
   gap: 8px;
   overflow-y: auto;
+  /* Para que el tamaño del número dependa del ancho de la rejilla (unidad cqi). */
+  container-type: inline-size;
 }
 
 .dorsal {
   position: relative;
   padding: 0;
-  min-height: 72px;
+  min-height: 56px;
   border: 2px solid transparent;
   border-radius: 12px;
   background: var(--tecla);
   box-shadow: var(--sombra);
-  font-size: clamp(28px, 4vw, 44px);
+  /* Más pequeño cuantas más columnas haya, para que quepan los dorsales de tres cifras. */
+  font-size: clamp(20px, calc(100cqi / var(--columnas, 6) * 0.42), 44px);
   font-weight: 900;
   transition: transform 0.08s;
   /* Evita el retardo y el zoom del doble toque en iPad. */
@@ -282,22 +290,23 @@ button:disabled {
   transform: scale(0.96);
 }
 
-/* Los del equipo, en verde con una raya a la izquierda, como el color de escudería. */
-.dorsal.equipo {
-  background: var(--equipo-suave);
-  border-color: var(--equipo);
-  color: var(--equipo);
+/* Cada club con sus colores (vienen en variables desde estiloClub.ts): fondo suave, borde y número
+   del color principal y una raya a la izquierda del secundario, como el color de escudería. */
+.dorsal.con-club {
+  background: var(--club-tinte);
+  border-color: var(--club-borde);
+  color: var(--club-numero);
 }
 
-.dorsal.equipo::before {
+.dorsal.con-club::before {
   content: '';
   position: absolute;
   left: 0;
   top: 10px;
   bottom: 10px;
-  width: 5px;
+  width: 6px;
   border-radius: 0 3px 3px 0;
-  background: var(--equipo);
+  background: var(--club-raya);
 }
 
 .dorsal .nombre-dorsal {
@@ -314,16 +323,16 @@ button:disabled {
   text-overflow: ellipsis;
 }
 
-/* El dorsal tocado se pone en rojo con su puesto en la esquina. */
-.dorsal[aria-pressed='true'] {
-  background: var(--acento);
-  border-color: var(--acento);
-  color: var(--sobre-color);
+/* El dorsal tocado se rellena en negro con su puesto en la esquina, sea del club que sea
+   (el rojo se confundiría con los clubes rojos). */
+.dorsal[aria-pressed='true'],
+.dorsal.con-club[aria-pressed='true'] {
+  background: var(--tocado);
+  border-color: var(--tocado);
+  color: var(--sobre-tocado);
 }
 
-.dorsal[aria-pressed='true']::before {
-  background: var(--sobre-color);
-}
+/* La raya del club se mantiene en el tocado, para seguir viendo de qué equipo es. */
 
 .dorsal .marca {
   position: absolute;
@@ -347,8 +356,15 @@ button:disabled {
   display: none;
 }
 
+.dorsal.fuera.con-club {
+  background: transparent;
+  border-color: var(--linea);
+  color: var(--apagado);
+}
+
 /* En el modo "la escapada dobla al pelotón", los escapados elegidos van en azul. */
-.dorsal.escapado {
+.dorsal.escapado,
+.dorsal.con-club.escapado {
   background: var(--marino);
   border-color: var(--marino);
   color: var(--sobre-color);
@@ -564,8 +580,8 @@ button:disabled {
   border-radius: 2px;
 }
 
-.fila-torre.equipo .raya {
-  background: var(--equipo);
+.fila-torre .raya {
+  background: linear-gradient(var(--club-borde) 0 50%, var(--club-raya) 50%);
 }
 
 .fila-torre .numero,
@@ -637,6 +653,10 @@ button:disabled {
 
   .rejilla {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .rejilla .dorsal {
+    font-size: 32px;
   }
 }
 

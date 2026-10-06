@@ -23,4 +23,4 @@ Cuando se publica una versión nueva, se descarga sola la próxima vez que abras
 
 ## Pendiente para más adelante
 
-- **Lista de inscritos por competición** (por ejemplo, la liga): dorsal, nombre y equipo de cada participante, para mostrar todos los nombres y pintar cada dorsal con los colores de su equipo, no solo el nuestro.
+- **Elegir quién de San Juan corre** cada carrera, en una pantalla entre crear la carrera y la carrera en directo, para no mostrar a los que no salen.
