@@ -11,6 +11,8 @@ export const TEXTOS = {
     unaSiUnaNo: 'Una sí y una no',
     puntosIntermedio: 'Puntos en sprints intermedios',
     puntosFinal: 'Puntos en el sprint final',
+    listaParticipantes: 'Participantes',
+    otraCarrera: 'Otra carrera (escribir los dorsales)',
     dorsales: 'Dorsales',
     dorsalesAyuda: 'Rangos y números sueltos, por ejemplo: 1-24, 30, 31',
     resumenSprints: 'Sprints a falta de',

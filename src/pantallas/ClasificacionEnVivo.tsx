@@ -1,17 +1,19 @@
 // Clasificación en directo para el panel de la carrera, al estilo de la torre de tiempos de la F1:
 // puesto, dorsal, nombre, puntos y distancia al líder. Los que no terminan van abajo con un código corto.
 
+import { clubDe, esNuestro } from '../modelo/clubes'
 import type { CuentasEnDirecto } from '../modelo/cuentas'
 import type { EstadoPatinador } from '../modelo/clasificacion'
 import { TEXTOS } from '../textos'
+import { estiloClub } from './estiloClub'
 
 const T = TEXTOS.clasificacion
 
 export function ClasificacionEnVivo({ cuentas }: { cuentas: CuentasEnDirecto }) {
   const { clasificacion, lider, liderAsegurado, porPatinador } = cuentas
-  // Se listan los que tienen puntos y, aunque tengan 0, los del equipo (son los que tienen nombre).
+  // Se listan los que tienen puntos y, aunque tengan 0, los de nuestro equipo.
   // El resto empata a 0 y ocuparía media pantalla.
-  const enTorre = clasificacion.filas.filter((f) => f.estado === 'en-carrera' && (f.puntos > 0 || f.nombre))
+  const enTorre = clasificacion.filas.filter((f) => f.estado === 'en-carrera' && (f.puntos > 0 || esNuestro(f)))
   const noTerminan = clasificacion.filas.filter((f) => f.estado !== 'en-carrera')
 
   return (
@@ -31,10 +33,10 @@ export function ClasificacionEnVivo({ cuentas }: { cuentas: CuentasEnDirecto }) 
           if (esLider) distancia = <span className="distancia lider">{liderAsegurado ? T.asegurado : T.lider}</span>
           else if (!cuentasFila.puedeAlcanzarLider) distancia = <span className="distancia sin-opciones">{T.fueraDeAlcance}</span>
           return (
-            <div key={fila.dorsal} className={fila.nombre ? 'fila-torre equipo' : 'fila-torre'}>
+            <div key={fila.dorsal} className={esNuestro(fila) ? 'fila-torre equipo' : 'fila-torre'}>
               {/* Con 0 puntos no hay puesto: todos los que no han puntuado empatan. */}
               <span className="puesto">{fila.puntos > 0 ? fila.puesto : '·'}</span>
-              <span className="raya" />
+              <span className="raya" style={estiloClub(clubDe(fila))} />
               <span className="numero">{fila.dorsal}</span>
               <span className="nombre">{fila.nombre}</span>
               <span className="puntos">{fila.puntos}</span>
@@ -44,9 +46,9 @@ export function ClasificacionEnVivo({ cuentas }: { cuentas: CuentasEnDirecto }) 
         })}
 
         {noTerminan.map((fila) => (
-          <div key={fila.dorsal} className={fila.nombre ? 'fila-torre fuera equipo' : 'fila-torre fuera'}>
+          <div key={fila.dorsal} className={esNuestro(fila) ? 'fila-torre fuera equipo' : 'fila-torre fuera'}>
             <span className="puesto" />
-            <span className="raya" />
+            <span className="raya" style={estiloClub(clubDe(fila))} />
             <span className="numero">{fila.dorsal}</span>
             <span className="nombre">{fila.nombre}</span>
             <span className="puntos">0</span>

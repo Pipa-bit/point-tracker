@@ -1,4 +1,5 @@
-// Pantalla para preparar una carrera: reglas, vueltas, dorsales y, si se quiere, el equipo con sus nombres.
+// Pantalla para preparar una carrera: reglas, vueltas y participantes. Los participantes salen de una lista
+// de inscritos (dorsal, nombre y club) o, en otras carreras, se escriben los dorsales y se elige el equipo.
 // Mientras se rellena, muestra en directo qué sprints habrá y avisa de los errores.
 
 import { useState } from 'react'
@@ -6,12 +7,17 @@ import { cargarHistorial, cargarJuegos, guardarJuegos } from '../almacen'
 import { calendarioSprints, validarConfiguracion } from '../modelo/calendario'
 import { leerDorsales } from '../modelo/dorsales'
 import { participantesConEquipo, type JuegoDorsales } from '../modelo/equipo'
+import { esNuestro } from '../modelo/clubes'
+import { LISTAS_INSCRITOS } from '../modelo/inscritos'
 import { PUNTOS_POR_DEFECTO, type Carrera, type ConfiguracionCarrera, type Participante } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
 import { PantallaHistorial } from './PantallaHistorial'
 import { PantallaJuegos } from './PantallaJuegos'
 
 const T = TEXTOS.crearCarrera
+
+/** Valor del selector para «Otra carrera»: los dorsales se escriben a mano. */
+const OTRA = 'otra'
 
 /** Convierte "3, 2, 1" en [3, 2, 1]. Devuelve null si algún trozo no es un número. */
 function leerPuntos(texto: string): number[] | null {
@@ -46,6 +52,8 @@ export function CrearCarrera({ alCrear }: Props) {
   const [frecuencia, setFrecuencia] = useState<1 | 2>(2)
   const [puntosIntermedio, setPuntosIntermedio] = useState(PUNTOS_POR_DEFECTO.puntosIntermedio.join(', '))
   const [puntosFinal, setPuntosFinal] = useState(PUNTOS_POR_DEFECTO.puntosFinal.join(', '))
+  // Lista de inscritos elegida, o OTRA para escribir los dorsales a mano.
+  const [listaId, setListaId] = useState(LISTAS_INSCRITOS[0]?.id ?? OTRA)
   const [textoDorsales, setTextoDorsales] = useState('')
   const [juegos, setJuegos] = useState<JuegoDorsales[]>(() => cargarJuegos())
   const [juegoId, setJuegoId] = useState('')
@@ -88,16 +96,17 @@ export function CrearCarrera({ alCrear }: Props) {
     puntosIntermedio: intermedio ?? [],
     puntosFinal: final ?? [],
   }
-  const { dorsales, errores: erroresDorsales } = leerDorsales(textoDorsales)
+  const lista = LISTAS_INSCRITOS.find((l) => l.id === listaId) ?? null
+  const { dorsales, errores: erroresDorsales } = lista ? { dorsales: [], errores: [] } : leerDorsales(textoDorsales)
   const juego = juegos.find((j) => j.id === juegoId) ?? null
-  const participantes = participantesConEquipo(dorsales, juego)
-  const delEquipo = participantes.filter((p) => p.nombre).length
+  const participantes: Participante[] = lista ? lista.participantes : participantesConEquipo(dorsales, juego)
+  const delEquipo = participantes.filter(esNuestro).length
 
   const camposVacios = vueltas === '' || primerSprint === ''
   const errores = camposVacios ? [] : validarConfiguracion(config)
   if (intermedio === null || final === null) errores.push('Los puntos deben ser números separados por comas.')
   errores.push(...erroresDorsales)
-  if ((textoDorsales !== '' || juego) && participantes.length < 2) errores.push('Hacen falta al menos dos dorsales.')
+  if ((lista || textoDorsales !== '' || juego) && participantes.length < 2) errores.push('Hacen falta al menos dos dorsales.')
 
   const sprints = !camposVacios && errores.length === 0 ? calendarioSprints(config) : []
   const sePuedeEmpezar = !camposVacios && errores.length === 0 && participantes.length >= 2 && nombre.trim() !== ''
@@ -149,27 +158,43 @@ export function CrearCarrera({ alCrear }: Props) {
         </label>
 
         <label className="campo campo-ancho">
-          {T.dorsales}
-          <input value={textoDorsales} onChange={(e) => setTextoDorsales(e.target.value)} placeholder="1-24" />
-          <small>{T.dorsalesAyuda}</small>
+          {T.listaParticipantes}
+          <select value={listaId} onChange={(e) => setListaId(e.target.value)}>
+            {LISTAS_INSCRITOS.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.nombre}
+              </option>
+            ))}
+            <option value={OTRA}>{T.otraCarrera}</option>
+          </select>
         </label>
 
-        <label className="campo campo-ancho">
-          {T.equipo}
-          <span className="fila-equipo">
-            <select value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
-              <option value="">{T.sinEquipo}</option>
-              {juegos.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.nombre}
-                </option>
-              ))}
-            </select>
-            <button type="button" onClick={() => setViendoJuegos(true)}>
-              {T.gestionarEquipos}
-            </button>
-          </span>
-        </label>
+        {lista === null && (
+          <>
+            <label className="campo campo-ancho">
+              {T.dorsales}
+              <input value={textoDorsales} onChange={(e) => setTextoDorsales(e.target.value)} placeholder="1-24" />
+              <small>{T.dorsalesAyuda}</small>
+            </label>
+
+            <label className="campo campo-ancho">
+              {T.equipo}
+              <span className="fila-equipo">
+                <select value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
+                  <option value="">{T.sinEquipo}</option>
+                  {juegos.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => setViendoJuegos(true)}>
+                  {T.gestionarEquipos}
+                </button>
+              </span>
+            </label>
+          </>
+        )}
       </div>
 
       {errores.length > 0 && (

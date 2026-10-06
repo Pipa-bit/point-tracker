@@ -5,13 +5,15 @@
 // Mantener pulsado un dorsal abre el menú de incidencias (doblado, abandono, descalificación).
 // Desde el historial se corrige cualquier sprint anterior o se borra una incidencia.
 
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { describirSuceso } from '../describir'
 import { anadirSuceso, borrarIncidencia, cambiarEstado, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
+import { clubDe, esNuestro } from '../modelo/clubes'
 import { calcularCuentas } from '../modelo/cuentas'
 import type { Carrera, Dorsal, Suceso } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
 import { BotonDorsal } from './BotonDorsal'
+import { estiloClub } from './estiloClub'
 import { ClasificacionEnVivo } from './ClasificacionEnVivo'
 import { Historial } from './Historial'
 import { MenuIncidencias } from './MenuIncidencias'
@@ -39,6 +41,9 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   const [correccion, setCorreccion] = useState<{ indice: number; llegada: Dorsal[] } | null>(null)
 
   const cuentas = calcularCuentas(carrera)
+  // Columnas de la rejilla según cuántos corren, para que quepan todos sin desplazar:
+  // 24 dorsales caben en 6 columnas, pero los 89 de una división necesitan 11.
+  const columnas = Math.max(6, Math.ceil(Math.sqrt(carrera.participantes.length * 1.2)))
   const { siguienteSprint, sprintsRestantes } = cuentas
   const puestos = siguienteSprint?.puntos.length ?? 0
   const ultimo = carrera.sucesos.at(-1)
@@ -139,25 +144,30 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
           </button>
         </header>
 
-        <div className="rejilla" aria-label="Dorsales">
-          {carrera.participantes.map(({ dorsal, nombre }) => {
+        <div className="rejilla" aria-label="Dorsales" style={{ '--columnas': columnas } as CSSProperties}>
+          {carrera.participantes.map((participante) => {
+            const { dorsal, nombre } = participante
+            const club = clubDe(participante)
+            const nuestro = esNuestro(participante)
             const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
             // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
             const estaFuera = correccion === null && fuera.has(dorsal)
             const esEscapado = escapados?.includes(dorsal) ?? false
-            // Solo los del equipo tienen nombre: se pintan con el color del equipo.
-            const clases = ['dorsal', nombre && 'equipo', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
+            const estilo = estiloClub(club)
+            const clases = ['dorsal', estilo && 'con-club', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
             return (
               <BotonDorsal
                 key={dorsal}
                 className={clases}
+                estilo={estilo}
                 pulsado={posicion !== -1 || esEscapado}
                 desactivado={estaFuera}
                 alTocar={() => tocarDorsal(dorsal)}
                 alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
               >
                 {dorsal}
-                {nombre && <span className="nombre-dorsal">{nombre}</span>}
+                {/* Debajo del número: el nombre de pila si es de los nuestros y, si no, el código del club. */}
+                {(nuestro ? nombre : club) && <span className="nombre-dorsal">{nuestro ? nombre?.split(' ')[0] : club}</span>}
                 {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
                 {estaFuera && <span className="marca">{fuera.get(dorsal)}</span>}
               </BotonDorsal>

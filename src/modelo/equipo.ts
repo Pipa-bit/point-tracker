@@ -5,21 +5,24 @@
 
 import type { Dorsal, Participante } from './tipos'
 
+/** Un patinador del equipo: dorsal y nombre. */
+export type MiembroEquipo = Required<Pick<Participante, 'dorsal' | 'nombre'>>
+
 export interface JuegoDorsales {
   id: string
   /** Tipo de competición y temporada, p. ej. "Liga Nacional 2026". */
   nombre: string
   /** Patinadores del equipo, todos con nombre. */
-  miembros: Required<Participante>[]
+  miembros: MiembroEquipo[]
 }
 
 export interface ResultadoEquipo {
-  miembros: Required<Participante>[]
+  miembros: MiembroEquipo[]
   errores: string[]
 }
 
 export function leerEquipo(texto: string): ResultadoEquipo {
-  const miembros: Required<Participante>[] = []
+  const miembros: MiembroEquipo[] = []
   const errores: string[] = []
   texto.split('\n').forEach((linea, i) => {
     const limpia = linea.trim()
@@ -42,7 +45,7 @@ export function leerEquipo(texto: string): ResultadoEquipo {
 }
 
 /** Lo contrario de `leerEquipo`, para poder editar un juego ya guardado. */
-export function textoEquipo(miembros: Required<Participante>[]): string {
+export function textoEquipo(miembros: MiembroEquipo[]): string {
   return miembros.map((m) => `${m.dorsal} ${m.nombre}`).join('\n')
 }
 

@@ -1,12 +1,14 @@
 // Botón de un dorsal en la rejilla: un toque normal anota el sprint y mantenerlo pulsado abre el menú de incidencias.
 
-import { useRef, type ReactNode } from 'react'
+import { useRef, type CSSProperties, type ReactNode } from 'react'
 
 /** Milisegundos que hay que mantener pulsado para que cuente como "toque largo". */
 const DURACION_TOQUE_LARGO = 500
 
 interface Props {
   className: string
+  /** Colores del club como variables CSS (ver `estiloClub`). */
+  estilo?: CSSProperties
   pulsado: boolean
   desactivado: boolean
   alTocar: () => void
@@ -14,7 +16,7 @@ interface Props {
   children: ReactNode
 }
 
-export function BotonDorsal({ className, pulsado, desactivado, alTocar, alMantener, children }: Props) {
+export function BotonDorsal({ className, estilo, pulsado, desactivado, alTocar, alMantener, children }: Props) {
   // useRef guarda un valor entre pintados sin volver a pintar al cambiarlo.
   const temporizador = useRef<number | null>(null)
   // Si el toque largo ya ha abierto el menú, el "click" que llega al soltar se ignora.
@@ -36,6 +38,7 @@ export function BotonDorsal({ className, pulsado, desactivado, alTocar, alManten
   return (
     <button
       className={className}
+      style={estilo}
       aria-pressed={pulsado}
       disabled={desactivado}
       onPointerDown={empezar}

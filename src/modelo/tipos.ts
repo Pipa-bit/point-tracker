@@ -31,8 +31,10 @@ export const PUNTOS_POR_DEFECTO: Pick<ConfiguracionCarrera, 'puntosIntermedio' |
 /** Un patinador inscrito en la carrera. */
 export interface Participante {
   dorsal: Dorsal
-  /** Solo para los patinadores del equipo; el resto se identifica por el dorsal. */
+  /** Con las listas de inscritos lo tienen todos; si no, solo los de nuestro equipo. */
   nombre?: string
+  /** Código del club (ver `clubes.ts`). Las carreras de dorsales escritos a mano no lo tienen. */
+  club?: string
 }
 
 /** Algo que ocurre durante la carrera, en el orden en que se anota. */
