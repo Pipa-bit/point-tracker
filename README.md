@@ -20,3 +20,7 @@ Cada vez que se sube código a `main`, GitHub Actions pasa los tests y, si van b
 3. Ábrela desde el icono. Desde ese momento funciona **sin conexión**, y las carreras se guardan en el iPad.
 
 Cuando se publica una versión nueva, se descarga sola la próxima vez que abras la web con conexión.
+
+## Pendiente para más adelante
+
+- **Lista de inscritos por competición** (por ejemplo, la liga): dorsal, nombre y equipo de cada participante, para mostrar todos los nombres y pintar cada dorsal con los colores de su equipo, no solo el nuestro.

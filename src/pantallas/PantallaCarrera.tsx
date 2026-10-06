@@ -48,7 +48,10 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     sprintCorregido?.tipo === 'sprint'
       ? (sprintCorregido.aFalta === 0 ? carrera.configuracion.puntosFinal : carrera.configuracion.puntosIntermedio).length
       : 0
-  const fuera = new Set(cuentas.clasificacion.filas.filter((f) => f.estado !== 'en-carrera').map((f) => f.dorsal))
+  // Para cada uno que ya no corre, su código corto (DOB, ABA, DSQ), que se ve en su botón.
+  const fuera = new Map(
+    cuentas.clasificacion.filas.flatMap((f) => (f.estado === 'en-carrera' ? [] : [[f.dorsal, TEXTOS.codigos[f.estado]] as const])),
+  )
 
   function tocarDorsal(dorsal: Dorsal) {
     if (correccion !== null) {
@@ -119,45 +122,78 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     if (window.confirm(T.confirmarSalir)) alSalir()
   }
 
+  // Lo que dice la cabecera del sprint: «a falta de N» con el número en grande, o el sprint final.
+  const cabecera = siguienteSprint === null
+    ? { etiqueta: T.terminada, valor: null }
+    : siguienteSprint.esFinal
+      ? { etiqueta: T.ultimaVuelta, valor: T.sprintFinal }
+      : { etiqueta: T.sprintAFalta, valor: String(siguienteSprint.aFalta) }
+
   return (
     <main className="carrera">
-      <section className="rejilla" aria-label="Dorsales">
-        {carrera.participantes.map(({ dorsal }) => {
-          const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
-          // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
-          const estaFuera = correccion === null && fuera.has(dorsal)
-          const esEscapado = escapados?.includes(dorsal) ?? false
-          const clases = ['dorsal', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
-          return (
-            <BotonDorsal
-              key={dorsal}
-              className={clases}
-              pulsado={posicion !== -1 || esEscapado}
-              desactivado={estaFuera}
-              alTocar={() => tocarDorsal(dorsal)}
-              alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
-            >
-              {dorsal}
-              {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
-              {estaFuera && <span className="marca">{TI.fuera}</span>}
-            </BotonDorsal>
-          )
-        })}
+      <section className="columna-rejilla">
+        <header className="barra">
+          <h1>{carrera.nombre}</h1>
+          <button className="chip" onClick={salir}>
+            {T.nuevaCarrera}
+          </button>
+        </header>
+
+        <div className="rejilla" aria-label="Dorsales">
+          {carrera.participantes.map(({ dorsal, nombre }) => {
+            const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
+            // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
+            const estaFuera = correccion === null && fuera.has(dorsal)
+            const esEscapado = escapados?.includes(dorsal) ?? false
+            // Solo los del equipo tienen nombre: se pintan con el color del equipo.
+            const clases = ['dorsal', nombre && 'equipo', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
+            return (
+              <BotonDorsal
+                key={dorsal}
+                className={clases}
+                pulsado={posicion !== -1 || esEscapado}
+                desactivado={estaFuera}
+                alTocar={() => tocarDorsal(dorsal)}
+                alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
+              >
+                {dorsal}
+                {nombre && <span className="nombre-dorsal">{nombre}</span>}
+                {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
+                {estaFuera && <span className="marca">{fuera.get(dorsal)}</span>}
+              </BotonDorsal>
+            )
+          })}
+        </div>
+
+        {correccion === null && escapados === null && (
+          <div className="herramientas">
+            {siguienteSprint && (
+              <button onClick={sinRegistrar} disabled={seleccion.length > 0}>
+                {T.sinRegistrar}
+              </button>
+            )}
+            <button onClick={() => setEscapados([])} disabled={seleccion.length > 0}>
+              {TI.escapadaDobla}
+            </button>
+            <button onClick={() => setHistorialAbierto(true)} disabled={seleccion.length > 0}>
+              {TH.abrir}
+            </button>
+          </div>
+        )}
+        <p className="ayuda">{TI.ayuda}</p>
       </section>
 
       <aside className="panel">
-        <h1>{carrera.nombre}</h1>
-
         {correccion !== null && sprintCorregido?.tipo === 'sprint' ? (
-          <div className="corrigiendo">
+          <div className="tarjeta sprint corrigiendo">
             <h2>
               {TH.corrigiendo}: {sprintCorregido.aFalta === 0 ? T.sprintFinal : `${T.sprintAFalta} ${sprintCorregido.aFalta}`}
             </h2>
             <p className="ayuda">{TH.ayudaCorregir}</p>
             <ol className="huecos">
               {Array.from({ length: puestosCorreccion }, (_, i) => (
-                <li key={i}>
-                  <span>{T.puesto(i + 1)}</span>
+                <li key={i} className={correccion.llegada[i] ? 'lleno' : ''}>
+                  <small>{T.puesto(i + 1)}</small>
                   <strong>{correccion.llegada[i] ?? '—'}</strong>
                 </li>
               ))}
@@ -168,42 +204,50 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
             <button onClick={() => setCorreccion(null)}>{TH.cancelar}</button>
           </div>
         ) : escapados !== null ? (
-          <>
+          <div className="tarjeta sprint">
             <h2>{TI.tocaEscapados}</h2>
             <p className="ayuda">{TI.escapadaDetalle}</p>
-            <p>
-              <strong>{escapados.length > 0 ? escapados.join(', ') : '—'}</strong>
-            </p>
+            <p className="escapados">{escapados.length > 0 ? escapados.join(', ') : '—'}</p>
             <button className="boton-principal" onClick={confirmarEscapada} disabled={escapados.length === 0}>
               {TI.confirmar}
             </button>
             <button onClick={() => setEscapados(null)}>{TI.cancelar}</button>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="tarjeta sprint">
+            <div className="cabecera-sprint">
+              <div>
+                <div className="etiqueta">{cabecera.etiqueta}</div>
+                {cabecera.valor && (
+                  <div className={siguienteSprint?.esFinal ? 'a-falta final' : 'a-falta'}>{cabecera.valor}</div>
+                )}
+              </div>
+              <div className="datos">
+                <div>
+                  <span className="etiqueta">{T.quedan}</span>
+                  <b>{sprintsRestantes}</b>
+                </div>
+                <div>
+                  <span className="etiqueta">{T.enJuego}</span>
+                  <b>{cuentas.puntosEnJuego}</b>
+                </div>
+              </div>
+            </div>
+
             {siguienteSprint ? (
-              <>
-                <h2>{siguienteSprint.esFinal ? T.sprintFinal : `${T.sprintAFalta} ${siguienteSprint.aFalta}`}</h2>
-                <ol className="huecos">
-                  {siguienteSprint.puntos.map((puntos, i) => (
-                    <li key={i}>
-                      <span>{T.puesto(i + 1)}</span>
-                      <strong>{seleccion[i] ?? '—'}</strong>
-                      <small>{puntos} pt</small>
-                    </li>
-                  ))}
-                </ol>
-                <p>
-                  {T.quedan}: {sprintsRestantes}
-                </p>
-              </>
+              <ol className="huecos">
+                {siguienteSprint.puntos.map((puntos, i) => (
+                  <li key={i} className={seleccion[i] ? 'lleno' : ''}>
+                    <small>{T.puesto(i + 1)}</small>
+                    <strong>{seleccion[i] ?? '—'}</strong>
+                    <small>{puntos} pt</small>
+                  </li>
+                ))}
+              </ol>
             ) : (
-              <>
-                <h2>{T.terminada}</h2>
-                <button className="boton-principal" onClick={() => alCambiar(cambiarEstado(carrera, 'terminada'))}>
-                  {TEXTOS.final.terminar}
-                </button>
-              </>
+              <button className="boton-principal" onClick={() => alCambiar(cambiarEstado(carrera, 'terminada'))}>
+                {TEXTOS.final.terminar}
+              </button>
             )}
 
             <button className="boton-deshacer" onClick={deshacer} disabled={seleccion.length === 0 && carrera.sucesos.length === 0}>
@@ -213,29 +257,13 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
             {ultimo && (
               // `key` cambia con cada suceso, así React crea el bloque de nuevo y la animación de aviso se repite.
               <p className="ultimo" key={carrera.sucesos.length}>
-                {T.ultimo}: {describirSuceso(ultimo)}
+                {T.ultimo}: <b>{describirSuceso(ultimo)}</b>
               </p>
             )}
-
-            {siguienteSprint && (
-              <button onClick={sinRegistrar} disabled={seleccion.length > 0}>
-                {T.sinRegistrar}
-              </button>
-            )}
-
-            <p className="ayuda">{TI.ayuda}</p>
-            <button onClick={() => setEscapados([])} disabled={seleccion.length > 0}>
-              {TI.escapadaDobla}
-            </button>
-            <button onClick={() => setHistorialAbierto(true)} disabled={seleccion.length > 0}>
-              {TH.abrir}
-            </button>
-          </>
+          </div>
         )}
 
         <ClasificacionEnVivo cuentas={cuentas} />
-
-        <button onClick={salir}>{T.nuevaCarrera}</button>
       </aside>
 
       {historialAbierto && (
