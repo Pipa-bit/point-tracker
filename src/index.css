@@ -228,6 +228,19 @@ button:disabled {
   gap: 12px;
 }
 
+/* Botones para elegir cómo se ordena la rejilla: por equipos o por dorsal. */
+.selector-vista {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.selector-vista .chip[aria-pressed='true'] {
+  background: var(--tocado);
+  border-color: var(--tocado);
+  color: var(--sobre-tocado);
+}
+
 /* Delante del nombre de la carrera, una franja con los tres colores del escudo. */
 .barra h1 {
   display: flex;
@@ -264,6 +277,58 @@ button:disabled {
   overflow-y: auto;
   /* Para que el tamaño del número dependa del ancho de la rejilla (unidad cqi). */
   container-type: inline-size;
+}
+
+/* Rejilla en columnas, una por club. Cada columna reparte el alto entre el club con más patinadores,
+   así los botones miden lo mismo en todas y las filas quedan alineadas. */
+.rejilla-clubes {
+  grid-auto-rows: auto;
+  gap: 6px;
+}
+
+.columna-club {
+  display: grid;
+  grid-template-rows: auto repeat(var(--filas), minmax(44px, 1fr));
+  gap: 6px;
+  min-width: 0;
+}
+
+.cabecera-club {
+  padding: 4px 0;
+  border-radius: 8px;
+  background: var(--club-borde);
+  color: var(--sobre-club, #fff);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.rejilla-clubes .dorsal {
+  min-height: 44px;
+  border-radius: 10px;
+  /* Los botones son más bajos: el número y el nombre van uno encima del otro, sin solaparse. */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  line-height: 1;
+  font-size: min(calc(100cqi / var(--columnas) * 0.36), 30px);
+}
+
+.rejilla-clubes .dorsal .nombre-dorsal {
+  position: static;
+  max-width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+  font-size: 9px;
+}
+
+.rejilla-clubes .dorsal .marca {
+  top: 2px;
+  right: 4px;
+  font-size: 10px;
 }
 
 .dorsal {

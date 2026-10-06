@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CLUBES, clubDe, coloresClub, esNuestro, luminancia } from './clubes'
+import { agruparPorClub, CLUBES, clubDe, coloresClub, esNuestro, luminancia } from './clubes'
 import { LISTAS_INSCRITOS } from './inscritos'
 
 describe('coloresClub', () => {
@@ -56,5 +56,25 @@ describe('listas de la Liga 2026', () => {
     for (const lista of LISTAS_INSCRITOS) {
       for (const p of lista.participantes) expect(CLUBES[p.club], `${lista.id} dorsal ${p.dorsal}`).toBeDefined()
     }
+  })
+})
+
+describe('agruparPorClub', () => {
+  it('pone nuestro club primero y el resto en el orden en que aparecen', () => {
+    const grupos = agruparPorClub([
+      { dorsal: 1, club: 'TXN' },
+      { dorsal: 2, club: 'TXN' },
+      { dorsal: 3, club: 'SJN' },
+      { dorsal: 4, club: 'CDA' },
+    ])
+    expect(grupos?.map((g) => [g.club, g.participantes.map((p) => p.dorsal)])).toEqual([
+      ['SJN', [3]],
+      ['TXN', [1, 2]],
+      ['CDA', [4]],
+    ])
+  })
+
+  it('sin clubes no agrupa', () => {
+    expect(agruparPorClub([{ dorsal: 1 }, { dorsal: 2, nombre: 'Adrián' }])).toBeNull()
   })
 })

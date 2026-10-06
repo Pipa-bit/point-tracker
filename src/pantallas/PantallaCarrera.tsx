@@ -6,11 +6,12 @@
 // Desde el historial se corrige cualquier sprint anterior o se borra una incidencia.
 
 import { useState, type CSSProperties } from 'react'
+import { cargarVista, guardarVista, type VistaRejilla } from '../almacen'
 import { describirSuceso } from '../describir'
 import { anadirSuceso, borrarIncidencia, cambiarEstado, corregirSprint, deshacerUltimo, registrarSiguienteSprint } from '../modelo/acciones'
-import { clubDe, esNuestro } from '../modelo/clubes'
+import { agruparPorClub, clubDe, esNuestro } from '../modelo/clubes'
 import { calcularCuentas } from '../modelo/cuentas'
-import type { Carrera, Dorsal, Suceso } from '../modelo/tipos'
+import type { Carrera, Dorsal, Participante, Suceso } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
 import { BotonDorsal } from './BotonDorsal'
 import { estiloClub } from './estiloClub'
@@ -39,11 +40,16 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   const [historialAbierto, setHistorialAbierto] = useState(false)
   // Sprint del historial que se está corrigiendo: su posición en la lista de sucesos y la nueva llegada.
   const [correccion, setCorreccion] = useState<{ indice: number; llegada: Dorsal[] } | null>(null)
+  // Rejilla por equipos (una columna por club) o por número de dorsal. Se recuerda en el dispositivo.
+  const [vista, setVista] = useState<VistaRejilla>(cargarVista)
 
   const cuentas = calcularCuentas(carrera)
   // Columnas de la rejilla según cuántos corren, para que quepan todos sin desplazar:
   // 24 dorsales caben en 6 columnas, pero los 89 de una división necesitan 11.
   const columnas = Math.max(6, Math.ceil(Math.sqrt(carrera.participantes.length * 1.2)))
+  // Con lista de inscritos, una columna por club; las filas son las del club con más patinadores.
+  const grupos = agruparPorClub(carrera.participantes)
+  const filas = Math.max(0, ...(grupos ?? []).map((g) => g.participantes.length))
   const { siguienteSprint, sprintsRestantes } = cuentas
   const puestos = siguienteSprint?.puntos.length ?? 0
   const ultimo = carrera.sucesos.at(-1)
@@ -127,6 +133,42 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     if (window.confirm(T.confirmarSalir)) alSalir()
   }
 
+  function elegirVista(v: VistaRejilla) {
+    setVista(v)
+    guardarVista(v)
+  }
+
+  // Botón de un dorsal. En la rejilla en columnas no hace falta el código del club debajo: ya está arriba.
+  function botonDorsal(participante: Participante, conCodigo: boolean) {
+    const { dorsal, nombre } = participante
+    const club = clubDe(participante)
+    const nuestro = esNuestro(participante)
+    const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
+    // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
+    const estaFuera = correccion === null && fuera.has(dorsal)
+    const esEscapado = escapados?.includes(dorsal) ?? false
+    const estilo = estiloClub(club)
+    const clases = ['dorsal', estilo && 'con-club', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
+    // Debajo del número: el nombre de pila si es de los nuestros y, si no, el código del club.
+    const etiqueta = nuestro ? nombre?.split(' ')[0] : conCodigo ? club : undefined
+    return (
+      <BotonDorsal
+        key={dorsal}
+        className={clases}
+        estilo={estilo}
+        pulsado={posicion !== -1 || esEscapado}
+        desactivado={estaFuera}
+        alTocar={() => tocarDorsal(dorsal)}
+        alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
+      >
+        {dorsal}
+        {etiqueta && <span className="nombre-dorsal">{etiqueta}</span>}
+        {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
+        {estaFuera && <span className="marca">{fuera.get(dorsal)}</span>}
+      </BotonDorsal>
+    )
+  }
+
   // Lo que dice la cabecera del sprint: «a falta de N» con el número en grande, o el sprint final.
   const cabecera = siguienteSprint === null
     ? { etiqueta: T.terminada, valor: null }
@@ -139,41 +181,39 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
       <section className="columna-rejilla">
         <header className="barra">
           <h1>{carrera.nombre}</h1>
+          {grupos && (
+            <div className="selector-vista" role="group" aria-label={T.vista}>
+              {(['equipos', 'dorsal'] as const).map((v) => (
+                <button key={v} className="chip" aria-pressed={vista === v} onClick={() => elegirVista(v)}>
+                  {v === 'equipos' ? T.porEquipos : T.porDorsal}
+                </button>
+              ))}
+            </div>
+          )}
           <button className="chip" onClick={salir}>
             {T.nuevaCarrera}
           </button>
         </header>
 
-        <div className="rejilla" aria-label="Dorsales" style={{ '--columnas': columnas } as CSSProperties}>
-          {carrera.participantes.map((participante) => {
-            const { dorsal, nombre } = participante
-            const club = clubDe(participante)
-            const nuestro = esNuestro(participante)
-            const posicion = (correccion?.llegada ?? seleccion).indexOf(dorsal)
-            // Al corregir un sprint antiguo se puede elegir a cualquiera: entonces quizá aún corría.
-            const estaFuera = correccion === null && fuera.has(dorsal)
-            const esEscapado = escapados?.includes(dorsal) ?? false
-            const estilo = estiloClub(club)
-            const clases = ['dorsal', estilo && 'con-club', estaFuera && 'fuera', esEscapado && 'escapado'].filter(Boolean).join(' ')
-            return (
-              <BotonDorsal
-                key={dorsal}
-                className={clases}
-                estilo={estilo}
-                pulsado={posicion !== -1 || esEscapado}
-                desactivado={estaFuera}
-                alTocar={() => tocarDorsal(dorsal)}
-                alMantener={() => escapados === null && correccion === null && setMenuDe(dorsal)}
-              >
-                {dorsal}
-                {/* Debajo del número: el nombre de pila si es de los nuestros y, si no, el código del club. */}
-                {(nuestro ? nombre : club) && <span className="nombre-dorsal">{nuestro ? nombre?.split(' ')[0] : club}</span>}
-                {posicion !== -1 && <span className="marca">{T.puesto(posicion + 1)}</span>}
-                {estaFuera && <span className="marca">{fuera.get(dorsal)}</span>}
-              </BotonDorsal>
-            )
-          })}
-        </div>
+        {grupos && vista === 'equipos' ? (
+          // Una columna por club, con su código arriba; todas con el mismo número de filas para que se alineen.
+          <div
+            className="rejilla rejilla-clubes"
+            aria-label="Dorsales"
+            style={{ '--columnas': grupos.length, '--filas': filas } as CSSProperties}
+          >
+            {grupos.map((grupo) => (
+              <div key={grupo.club} className="columna-club" style={estiloClub(grupo.club)}>
+                <div className="cabecera-club">{grupo.club}</div>
+                {grupo.participantes.map((p) => botonDorsal(p, false))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rejilla" aria-label="Dorsales" style={{ '--columnas': columnas } as CSSProperties}>
+            {carrera.participantes.map((p) => botonDorsal(p, true))}
+          </div>
+        )}
 
         {correccion === null && escapados === null && (
           <div className="herramientas">
