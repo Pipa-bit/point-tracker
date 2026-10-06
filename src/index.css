@@ -946,3 +946,399 @@ select {
   font-weight: 400;
   color: var(--suave);
 }
+
+/* ---------- Nueva carrera ---------- */
+
+/* Formulario a la izquierda y, a la derecha, el resumen en directo con el botón para seguir. */
+.crear-carrera {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.crear-columnas {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 12px;
+  align-items: start;
+}
+
+.crear-formulario {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.bloque {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  align-content: start;
+}
+
+.bloque h2 {
+  margin: 0;
+}
+
+.bloque input,
+.bloque select {
+  font-size: 20px;
+  padding: 10px 12px;
+}
+
+.divisiones {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.division {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  text-align: left;
+  border: 2px solid var(--linea);
+  background: var(--tecla);
+}
+
+.division b {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.division span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--suave);
+}
+
+.division.otra {
+  border-style: dashed;
+}
+
+.division[aria-pressed='true'] {
+  background: var(--tocado);
+  border-color: var(--tocado);
+  color: var(--sobre-tocado);
+}
+
+.division[aria-pressed='true'] span {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.crear-resumen {
+  position: sticky;
+  top: 12px;
+}
+
+.sprints-previstos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sprints-previstos span:not(.ayuda) {
+  min-width: 34px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 8px;
+  border: 1px solid var(--linea);
+  background: var(--tecla);
+  font-weight: 900;
+}
+
+.sprints-previstos span.final {
+  padding: 4px 10px;
+  text-transform: capitalize;
+  background: var(--acento);
+  border-color: var(--acento);
+  color: var(--sobre-color);
+}
+
+.dato-grande {
+  margin: 0;
+  color: var(--suave);
+  font-weight: 600;
+}
+
+.dato-grande b {
+  margin-right: 6px;
+  font-size: 44px;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--texto);
+}
+
+.recuento-clubes {
+  display: grid;
+  gap: 2px;
+}
+
+/* Una fila por club: raya con sus colores, código, barra proporcional al número de inscritos y el número. */
+.recuento {
+  display: grid;
+  grid-template-columns: 6px 44px 1fr 28px;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 4px;
+  border-radius: 6px;
+}
+
+.recuento .raya {
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(var(--club-borde) 0 50%, var(--club-raya) 50%);
+}
+
+.recuento b {
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.recuento .barrita {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(var(--club-borde), var(--club-borde)) left / var(--parte) 100% no-repeat, var(--linea);
+}
+
+.recuento .cuantos {
+  text-align: right;
+  font-weight: 700;
+}
+
+.recuento.nuestro {
+  background: var(--equipo-suave);
+}
+
+.recuento.nuestro b,
+.recuento.nuestro .cuantos {
+  color: var(--equipo);
+}
+
+.crear-resumen .boton-principal {
+  margin-top: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.boton-principal small {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.85;
+}
+
+.barra h1 .sub {
+  font-weight: 600;
+  color: var(--suave);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media (max-width: 900px) {
+  .crear-columnas {
+    grid-template-columns: 1fr;
+  }
+
+  .crear-resumen {
+    position: static;
+  }
+
+  .divisiones {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ---------- Quién corre de San Juan ---------- */
+
+.convocatoria {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.convocatoria .barra h1 {
+  margin-right: auto;
+}
+
+.cartas {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  max-width: 1000px;
+}
+
+/* Carta como las de los videojuegos de fútbol: verde del uniforme con brillo arriba, rayas finas y un filo claro. */
+.carta {
+  --carta-1: #1f8a46;
+  --carta-2: #0b4a22;
+  position: relative;
+  aspect-ratio: 3 / 4;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px 16px 40% 40% / 16px 16px 14% 14%;
+  background:
+    radial-gradient(120% 70% at 30% 0%, rgb(201 242 214 / 0.9) 0%, transparent 45%),
+    linear-gradient(160deg, var(--carta-1), var(--carta-2));
+  color: #fff;
+  text-align: left;
+  box-shadow: 0 6px 18px rgb(14 95 44 / 0.35);
+  transition: transform 0.15s, filter 0.15s;
+}
+
+.carta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(115deg, rgb(255 255 255 / 0.06) 0 10px, transparent 10px 22px);
+}
+
+.carta::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: inherit;
+  border: 1.5px solid rgb(255 255 255 / 0.45);
+  pointer-events: none;
+}
+
+.carta .numero {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.carta .codigo {
+  position: absolute;
+  top: 52px;
+  left: 15px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.carta .estado {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  background: #fff;
+  color: var(--carta-2);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.carta .silueta {
+  position: absolute;
+  right: -6px;
+  bottom: 26%;
+  width: 72%;
+  fill: currentColor;
+  opacity: 0.55;
+}
+
+.carta .nombre {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12%;
+  display: grid;
+  padding: 0 8px;
+  text-align: center;
+  line-height: 1.05;
+}
+
+.carta .nombre b {
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.carta .nombre span {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.carta[aria-pressed='false'] {
+  background: linear-gradient(160deg, #c9ced9, #a7aebd);
+  color: #5a6276;
+  box-shadow: none;
+  transform: scale(0.94);
+}
+
+.carta[aria-pressed='false']::after {
+  border-color: rgb(90 98 118 / 0.35);
+}
+
+.carta[aria-pressed='false'] .estado {
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+
+.carta[aria-pressed='false'] .silueta {
+  opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carta {
+    transition: none;
+  }
+}
+
+.barra-inferior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contador {
+  margin: 0;
+  color: var(--suave);
+  font-weight: 600;
+}
+
+.contador b {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--equipo);
+}
+
+.barra-inferior .boton-principal {
+  width: auto;
+  margin-top: 0;
+  padding: 14px 32px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 700px) {
+  .cartas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
