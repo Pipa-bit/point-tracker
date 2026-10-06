@@ -23,4 +23,4 @@ Cuando se publica una versión nueva, se descarga sola la próxima vez que abras
 
 ## Pendiente para más adelante
 
-- **Elegir quién de San Juan corre** cada carrera, en una pantalla entre crear la carrera y la carrera en directo, para no mostrar a los que no salen.
+- **Fotos en las cartas** de la pantalla "¿Quién corre?": de momento cada carta lleva una silueta en su lugar.
