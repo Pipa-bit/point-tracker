@@ -26,7 +26,9 @@ self.addEventListener('fetch', (evento) => {
 
   if (peticion.mode === 'navigate') {
     // La página: primero se intenta la red (para recibir actualizaciones) y, sin conexión, la copia guardada.
-    evento.respondWith(fetch(peticion).catch(() => caches.match('./index.html', { ignoreSearch: true })))
+    // `no-cache` obliga a preguntar al servidor si hay versión nueva: si no, el navegador puede servir
+    // durante unos minutos la página antigua que tiene en su caché y la actualización no se ve.
+    evento.respondWith(fetch(peticion, { cache: 'no-cache' }).catch(() => caches.match('./index.html', { ignoreSearch: true })))
     return
   }
   // El resto (código, estilos, iconos): la copia guardada, y si no la hay, la red.
