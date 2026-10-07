@@ -29,7 +29,9 @@ export function ClasificacionEnVivo({ cuentas }: { cuentas: CuentasEnDirecto }) 
         {enTorre.map((fila) => {
           const cuentasFila = porPatinador.find((c) => c.dorsal === fila.dorsal)!
           const esLider = fila.dorsal === lider
-          let distancia = <span className="distancia">−{cuentasFila.puntosHastaLider}</span>
+          // Sin líder (nadie ha puntuado) no hay distancia que enseñar; empatado con él, «=».
+          const hasta = cuentasFila.puntosHastaLider
+          let distancia = <span className="distancia">{lider === null ? '' : hasta === 0 ? '=' : `−${hasta}`}</span>
           if (esLider) distancia = <span className="distancia lider">{liderAsegurado ? T.asegurado : T.lider}</span>
           else if (!cuentasFila.puedeAlcanzarLider) distancia = <span className="distancia sin-opciones">{T.fueraDeAlcance}</span>
           return (

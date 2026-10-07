@@ -89,6 +89,16 @@ export const TEXTOS = {
     vacio: 'sin registrar',
     terminada: 'Todos los sprints registrados',
     confirmarSalir: '¿Empezar una carrera nueva? Esta se borrará del dispositivo.',
+    menu: 'Menú',
+    cerrar: 'Cerrar',
+    sprints: 'Sprints de la carrera',
+    ahora: 'ahora',
+    final: 'Final',
+    cuenta: (quedan: number, enJuego: number) => `quedan ${quedan} · en juego ${enJuego}`,
+    // Etiquetas cortas de los botones que hay debajo de Deshacer.
+    sinRegistrarCorto: 'Sin registrar',
+    escapadaCorto: 'Escapada',
+    historialCorto: 'Historial',
   },
   incidencias: {
     ayuda: 'Mantén pulsado un dorsal para doblajes, abandonos y descalificaciones.',
