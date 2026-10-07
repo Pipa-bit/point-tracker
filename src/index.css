@@ -744,10 +744,10 @@ button:disabled {
   padding: 10px 12px;
 }
 
-/* Puesto · raya del equipo · dorsal · nombre · puntos · distancia al líder */
+/* Puesto · raya del equipo · dorsal · nombre · puntos */
 .fila-torre {
   display: grid;
-  grid-template-columns: 20px 4px 34px 1fr 26px 62px;
+  grid-template-columns: 20px 4px 34px 1fr 34px;
   align-items: center;
   gap: 7px;
   height: 30px;
@@ -784,8 +784,7 @@ button:disabled {
   font-weight: 800;
 }
 
-.fila-torre .puntos,
-.fila-torre .distancia {
+.fila-torre .puntos {
   text-align: right;
 }
 
@@ -800,33 +799,16 @@ button:disabled {
   font-weight: 600;
 }
 
-.fila-torre .distancia {
-  font-size: 13px;
-  color: var(--suave);
-}
-
-.fila-torre .distancia.lider {
-  color: var(--acento);
-  font-weight: 700;
-}
-
-/* Quien ya no puede alcanzar al líder, y quien ya no corre, se ven apagados. */
-.fila-torre .distancia.sin-opciones,
+/* Quien ya no corre se ve apagado, con su código (DOB, ABA, DSQ) en rojo en lugar de los puntos. */
 .fila-torre.fuera,
 .fila-torre.fuera .nombre {
   color: var(--apagado);
 }
 
-.fila-torre.fuera .distancia {
+.fila-torre .puntos.codigo {
+  font-size: 14px;
   font-weight: 700;
   color: var(--acento);
-}
-
-.torre .nota {
-  margin: 0;
-  padding: 6px 12px 10px;
-  font-size: 13px;
-  color: var(--suave);
 }
 
 .torre .errores {
