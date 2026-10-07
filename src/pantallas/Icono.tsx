@@ -26,6 +26,15 @@ const TRAZOS = {
     </>
   ),
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  // Lista con viñetas: carreras anteriores.
+  lista: (
+    <>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <circle cx="4.5" cy="6" r="1" />
+      <circle cx="4.5" cy="12" r="1" />
+      <circle cx="4.5" cy="18" r="1" />
+    </>
+  ),
 }
 
 export function Icono({ nombre }: { nombre: keyof typeof TRAZOS }) {

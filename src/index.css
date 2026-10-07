@@ -1086,65 +1086,63 @@ select {
 
 /* ---------- Nueva carrera ---------- */
 
-/* Formulario a la izquierda y, a la derecha, el resumen en directo con el botón para seguir. */
+/* Tres columnas a toda la altura: división, reglas y resumen. Todo cabe sin desplazar en el iPad. */
 .crear-carrera {
   display: grid;
-  gap: 12px;
-  align-content: start;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 16px 24px;
+  grid-template-columns: 280px 1fr 330px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'barra barra barra'
+    'divisiones reglas resumen';
+  gap: 10px;
+  height: 100dvh;
+  padding: 10px;
+  box-sizing: border-box;
   font-variant-numeric: tabular-nums;
 }
 
-.crear-columnas {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 12px;
-  align-items: start;
+.crear-carrera > .barra {
+  grid-area: barra;
+  min-height: 48px;
+  padding: 0 8px 0 14px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--sombra);
 }
 
-.crear-formulario {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.bloque {
-  display: grid;
-  gap: 14px;
-  padding: 16px;
-  align-content: start;
-}
-
-.bloque h2 {
+.crear-carrera h2 {
   margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--suave);
 }
 
-.bloque input,
-.bloque select {
-  font-size: 20px;
-  padding: 10px 12px;
-}
-
-.divisiones {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+.crear-divisiones {
+  grid-area: divisiones;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
+/* Cada división como un dorsal de papel: blanco con franja arriba; la elegida, negra con franja roja. */
 .division {
   display: grid;
-  gap: 2px;
-  padding: 10px 12px;
+  gap: 1px;
+  padding: 10px 14px;
+  border: 0;
+  border-top: 6px solid var(--linea);
+  border-radius: 4px;
+  background: var(--papel);
   text-align: left;
-  border: 2px solid var(--linea);
-  background: var(--tecla);
+  box-shadow: var(--sombra);
 }
 
 .division b {
-  font-size: 18px;
-  font-weight: 900;
+  font-family: var(--letra-numeros);
+  font-size: 21px;
+  font-weight: 700;
   line-height: 1.1;
 }
 
@@ -1154,104 +1152,204 @@ select {
   color: var(--suave);
 }
 
-.division.otra {
-  border-style: dashed;
-}
-
 .division[aria-pressed='true'] {
+  border-top-color: var(--acento);
   background: var(--tocado);
-  border-color: var(--tocado);
   color: var(--sobre-tocado);
 }
 
 .division[aria-pressed='true'] span {
-  color: inherit;
-  opacity: 0.75;
+  color: var(--apagado);
+}
+
+.division.otra {
+  border: 2px dashed var(--borde);
+  background: transparent;
+  box-shadow: none;
+}
+
+.division.otra[aria-pressed='true'] {
+  border-style: solid;
+  border-color: var(--tocado);
+  background: var(--tocado);
+}
+
+.crear-reglas {
+  grid-area: reglas;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 12px;
+}
+
+.crear-reglas input,
+.crear-reglas select {
+  font-size: 17px;
+  padding: 9px 12px;
+}
+
+.dos-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Número con − y + a los lados, en grande, para no tener que sacar el teclado. */
+.paso {
+  display: grid;
+  grid-template-columns: 58px 1fr 58px;
+  height: 56px;
+  border: 2px solid var(--tocado);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.paso button {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--fondo);
+  color: var(--marino);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.paso input {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  text-align: center;
+  font-family: var(--letra-numeros);
+  font-size: 36px;
+  font-weight: 800;
+}
+
+/* Puntos de cada puesto como fichas, con − y + para quitar o añadir puestos. */
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.fichas input,
+.fichas button {
+  width: 42px;
+  height: 46px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.crear-reglas .fichas input {
+  border: 2px solid var(--tocado);
+  border-top-width: 5px;
+  font-family: var(--letra-numeros);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.fichas button {
+  border: 2px dashed var(--borde);
+  background: transparent;
+  color: var(--marino);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.crear-reglas .selector button {
+  padding: 11px;
 }
 
 .crear-resumen {
-  position: sticky;
-  top: 12px;
+  grid-area: resumen;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 12px;
 }
 
 .sprints-previstos {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sprints-previstos span:not(.ayuda) {
+  display: grid;
+  place-items: center;
   min-width: 34px;
-  padding: 4px 6px;
+  height: 30px;
+  padding: 0 4px;
   box-sizing: border-box;
-  text-align: center;
-  border-radius: 8px;
-  border: 1px solid var(--linea);
-  background: var(--tecla);
-  font-weight: 900;
+  border-radius: 6px;
+  background: var(--fondo);
+  font-family: var(--letra-numeros);
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .sprints-previstos span.final {
-  padding: 4px 10px;
+  padding: 0 10px;
   text-transform: capitalize;
   background: var(--acento);
-  border-color: var(--acento);
   color: var(--sobre-color);
 }
 
 .dato-grande {
-  margin: 0;
+  margin: 4px 0 0;
   color: var(--suave);
-  font-weight: 600;
 }
 
 .dato-grande b {
   margin-right: 6px;
+  font-family: var(--letra-numeros);
   font-size: 44px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   color: var(--texto);
 }
 
+/* Clubes en dos columnas: código, barra proporcional a los inscritos y el número. */
 .recuento-clubes {
   display: grid;
-  gap: 2px;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 14px;
 }
 
-/* Una fila por club: raya con sus colores, código, barra proporcional al número de inscritos y el número. */
 .recuento {
   display: grid;
-  grid-template-columns: 6px 44px 1fr 28px;
-  gap: 8px;
+  grid-template-columns: 34px 1fr 20px;
+  gap: 6px;
   align-items: center;
-  padding: 3px 4px;
-  border-radius: 6px;
-}
-
-.recuento .raya {
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(var(--club-borde) 0 50%, var(--club-raya) 50%);
+  height: 25px;
+  font-size: 14px;
 }
 
 .recuento b {
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  font-family: var(--letra-numeros);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .recuento .barrita {
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(var(--club-borde), var(--club-borde)) left / var(--parte) 100% no-repeat, var(--linea);
+  background: linear-gradient(var(--club-borde), var(--club-borde)) left / var(--parte) 100% no-repeat, var(--fondo);
 }
 
 .recuento .cuantos {
   text-align: right;
-  font-weight: 700;
-}
-
-.recuento.nuestro {
-  background: var(--equipo-suave);
+  font-weight: 600;
 }
 
 .recuento.nuestro b,
@@ -1259,39 +1357,49 @@ select {
   color: var(--equipo);
 }
 
+/* El botón para seguir va pegado abajo, siempre a la vista. */
 .crear-resumen .boton-principal {
-  margin-top: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  margin-top: auto;
+  min-height: 66px;
+  font-family: var(--letra-numeros);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .boton-principal small {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--letra);
+  font-size: 13px;
+  font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .barra h1 .sub {
-  font-weight: 600;
+  font-family: var(--letra);
+  font-size: 16px;
+  font-weight: 400;
   color: var(--suave);
-  text-transform: none;
-  letter-spacing: 0;
 }
 
+/* En pantallas estrechas, una columna detrás de otra. */
 @media (max-width: 900px) {
-  .crear-columnas {
+  .crear-carrera {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: 'barra' 'divisiones' 'reglas' 'resumen';
+    height: auto;
   }
 
-  .crear-resumen {
-    position: static;
-  }
-
-  .divisiones {
+  .crear-divisiones {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crear-divisiones h2 {
+    grid-column: 1 / -1;
   }
 }
 
