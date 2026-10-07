@@ -11,7 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource/titillium-web": "^5.3.0",
+    "@fontsource/saira": "^5.3.0",
+    "@fontsource/saira-condensed": "^5.3.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

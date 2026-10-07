@@ -6,6 +6,7 @@
 //   Si la escapada dobla a todo el pelotón, eso les pasa a todos los que no van escapados.
 // - Doblado por el pelotón, abandono o descalificación: pierde los puntos y no termina.
 // Después ordena: más puntos primero y, a igualdad de puntos, quien llegó antes en la última vuelta.
+// Solo se piden desempates entre los primeros puestos; más abajo los empatados se quedan empatados.
 
 import type { Carrera, Dorsal } from './tipos'
 
@@ -25,13 +26,16 @@ export interface Clasificacion {
   /** Primero los que siguen en carrera, por puesto; al final los que no terminan. */
   filas: FilaClasificacion[]
   /**
-   * Grupos de patinadores empatados a puntos (más de 0) que la llegada conocida no desempata.
-   * Al terminar, la web pedirá el orden de llegada de cada grupo.
+   * Grupos de patinadores empatados a puntos (más de 0) en los PUESTOS_CON_DESEMPATE primeros puestos
+   * que la llegada conocida no desempata. Al terminar, la web pedirá el orden de llegada de cada grupo.
    */
   desempatesPendientes: Dorsal[][]
   /** Incoherencias encontradas en los datos (p. ej. un dorsal que no existe). No detienen el cálculo. */
   avisos: string[]
 }
+
+/** Los empates que empiezan en estos primeros puestos se resuelven al terminar; los de más abajo quedan empatados. */
+export const PUESTOS_CON_DESEMPATE = 5
 
 type DatosCarrera = Pick<Carrera, 'configuracion' | 'participantes' | 'sucesos' | 'llegadaFinalCompleta'>
 
@@ -138,7 +142,7 @@ export function calcularClasificacion(carrera: DatosCarrera): Clasificacion {
     const anterior = enCarrera[i - 1]
     if (anterior && comparar(anterior, fila) === 0) {
       fila.puesto = anterior.puesto
-      if (fila.puntos > 0) {
+      if (fila.puntos > 0 && fila.puesto !== null && fila.puesto <= PUESTOS_CON_DESEMPATE) {
         const grupo = desempatesPendientes.find((g) => g.includes(anterior.dorsal))
         if (grupo) grupo.push(fila.dorsal)
         else desempatesPendientes.push([anterior.dorsal, fila.dorsal])

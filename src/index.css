@@ -2,21 +2,24 @@
    paneles blancos con esquinas redondeadas sobre gris frío, tipografía estrecha en negrita y color
    solo para lo que importa. Los colores salen del escudo del club. */
 
-/* Titillium Web va dentro de la web (no se descarga de Google), así funciona sin conexión. */
-@import '@fontsource/titillium-web/latin-400.css';
-@import '@fontsource/titillium-web/latin-600.css';
-@import '@fontsource/titillium-web/latin-700.css';
-@import '@fontsource/titillium-web/latin-900.css';
+/* Las letras van dentro de la web (no se descargan de Google), así funciona sin conexión.
+   Saira para el texto y Saira Condensed, más estrecha, para los números: así los dorsales de tres
+   cifras caben grandes aunque haya muchas columnas. */
+@import '@fontsource/saira/latin-400.css';
+@import '@fontsource/saira/latin-600.css';
+@import '@fontsource/saira/latin-700.css';
+@import '@fontsource/saira-condensed/latin-700.css';
+@import '@fontsource/saira-condensed/latin-800.css';
 
 :root {
-  --fondo: #e9ecf2; /* gris frío, con un punto del azul del escudo */
+  --fondo: #dde2ea; /* gris frío, con un punto del azul del escudo */
   --panel: #fff;
   --texto: #0b1020;
   --suave: #5a6276;
   --linea: #d3d8e2;
   --borde: #8a93a6;
   --apagado: #9aa1b2;
-  --tecla: #f6f7fa; /* fondo de los botones de dorsal */
+  --tecla: #f6f7fa; /* fondo de los botones de los menús */
   --acento: #d7141a; /* rojo de la llama */
   --marino: #0a1f7a; /* azul del escudo */
   --equipo: #0e5f2c; /* verde del uniforme, más oscuro que el del escudo */
@@ -26,9 +29,13 @@
   --sobre-color: #fff; /* texto encima de rojo, azul o verde */
   --tocado: #0b1020; /* dorsal tocado en el sprint */
   --sobre-tocado: #fff;
+  --papel: #fff; /* fondo de los dorsales */
+  --tinta: #000; /* número de los dorsales: negro sobre blanco, lo que mejor se lee al sol */
   --sombra: 0 1px 2px rgb(11 16 32 / 0.08), 0 4px 14px rgb(11 16 32 / 0.06);
   --radio: 14px;
-  font-family: 'Titillium Web', 'Arial Narrow', system-ui, sans-serif;
+  --letra: 'Saira', system-ui, sans-serif;
+  --letra-numeros: 'Saira Condensed', 'Arial Narrow', sans-serif;
+  font-family: var(--letra);
   font-size: 18px;
   color: var(--texto);
   background: var(--fondo);
@@ -53,6 +60,8 @@
   --sobre-color: #0c0f17;
   --tocado: #f2f4f8;
   --sobre-tocado: #0c0f17;
+  --papel: #1e2433;
+  --tinta: #f2f4f8;
   --sombra: none;
   color-scheme: dark;
 }
@@ -201,25 +210,7 @@ button:disabled {
   color: var(--suave);
 }
 
-/* ---------- Pantalla de la carrera ---------- */
-
-/* Rejilla a la izquierda (lo que más se toca) y columna a la derecha con el sprint y la torre. */
-.carrera {
-  display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 12px;
-  padding: 12px 16px;
-  height: 100dvh;
-  box-sizing: border-box;
-}
-
-.columna-rejilla {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  min-height: 0;
-}
+/* ---------- Barra de arriba (todas las pantallas) ---------- */
 
 .barra {
   display: flex;
@@ -228,29 +219,15 @@ button:disabled {
   gap: 12px;
 }
 
-/* Botones para elegir cómo se ordena la rejilla: por equipos o por dorsal. */
-.selector-vista {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.selector-vista .chip[aria-pressed='true'] {
-  background: var(--tocado);
-  border-color: var(--tocado);
-  color: var(--sobre-tocado);
-}
-
-/* Delante del nombre de la carrera, una franja con los tres colores del escudo. */
+/* Delante del nombre de la pantalla, una franja con los tres colores del escudo. */
 .barra h1 {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-size: 18px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-family: var(--letra-numeros);
+  font-size: 22px;
+  font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -265,83 +242,231 @@ button:disabled {
   background: linear-gradient(var(--acento) 0 33%, var(--marino) 33% 66%, var(--equipo) 66%);
 }
 
-/* Las columnas (--columnas) las calcula PantallaCarrera según los participantes, para que quepan todos
-   llenando el alto. Si aun así no caben, la rejilla se desplaza. */
+.icono {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* ---------- Pantalla de la carrera ---------- */
+
+/* Arriba la barra con la línea de sprints. Debajo, la rejilla ocupa todo el alto de la izquierda
+   y a la derecha van la clasificación y, al fondo, el sprint que se anota (cerca del pulgar). */
+.carrera {
+  display: grid;
+  grid-template-columns: 1fr 312px;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'barra barra'
+    'rejilla torre'
+    'rejilla dock';
+  gap: 10px;
+  padding: 10px;
+  height: 100dvh;
+  box-sizing: border-box;
+}
+
+.barra-carrera {
+  grid-area: barra;
+  min-height: 58px;
+  padding: 6px 8px 6px 14px;
+  box-sizing: border-box;
+  background: var(--panel);
+  border-radius: 12px;
+  box-shadow: var(--sombra);
+}
+
+/* La división en grande y la competición debajo, en pequeño. */
+.barra-carrera h1 {
+  display: grid;
+  flex-shrink: 0;
+  line-height: 1.05;
+}
+
+.barra-carrera h1::before {
+  display: none;
+}
+
+.barra-carrera h1 small {
+  font-family: var(--letra);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--suave);
+}
+
+/* Los sprints en fila: hechos en gris con el ganador debajo, el actual en negro y el final en rojo. */
+.linea-sprints {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.linea-sprints li {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 38px;
+  border-radius: 6px;
+  background: var(--fondo);
+  color: var(--suave);
+  font-family: var(--letra-numeros);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.linea-sprints small {
+  font-family: var(--letra);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto);
+}
+
+.linea-sprints .hecho {
+  background: color-mix(in srgb, var(--fondo) 45%, var(--panel));
+  color: var(--apagado);
+}
+
+.linea-sprints .ahora {
+  width: 64px;
+  height: 46px;
+  background: var(--tocado);
+  color: var(--sobre-tocado);
+  font-size: 30px;
+}
+
+.linea-sprints .ahora small {
+  font-size: 9px;
+  color: var(--aviso);
+}
+
+.linea-sprints .final {
+  width: 46px;
+  background: var(--acento);
+  color: var(--sobre-color);
+  font-size: 14px;
+}
+
+.linea-sprints .ahora:last-child {
+  font-size: 20px;
+}
+
+/* Interruptor de dos posiciones para ordenar la rejilla por equipos o por dorsal. */
+.selector-vista {
+  display: flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--fondo);
+}
+
+.selector-vista button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+}
+
+.selector-vista button[aria-pressed='true'] {
+  background: var(--tocado);
+  color: var(--sobre-tocado);
+}
+
+.boton-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Rejilla por dorsal: las columnas (--columnas) las calcula PantallaCarrera según los participantes,
+   para que quepan todos llenando el alto. Si aun así no caben, la rejilla se desplaza. */
 .rejilla {
-  flex: 1;
+  grid-area: rejilla;
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(var(--columnas, 6), 1fr);
-  grid-auto-rows: minmax(56px, 1fr);
-  gap: 8px;
+  grid-auto-rows: minmax(48px, 1fr);
+  gap: 6px;
   overflow-y: auto;
   /* Para que el tamaño del número dependa del ancho de la rejilla (unidad cqi). */
   container-type: inline-size;
 }
 
-/* Rejilla en columnas, una por club. Cada columna reparte el alto entre el club con más patinadores,
-   así los botones miden lo mismo en todas y las filas quedan alineadas. */
+/* Rejilla por equipos: una columna por club que llega hasta abajo. Cada columna reparte el alto
+   entre las filas del club con más patinadores, así los botones miden lo mismo y quedan alineados. */
 .rejilla-clubes {
-  grid-auto-rows: auto;
+  display: flex;
   gap: 6px;
 }
 
 .columna-club {
-  display: grid;
-  grid-template-rows: auto repeat(var(--filas), minmax(44px, 1fr));
-  gap: 6px;
+  flex: 1;
   min-width: 0;
+  display: grid;
+  grid-template-rows: 22px repeat(var(--filas), minmax(40px, 1fr));
+  gap: 5px;
 }
 
+/* Código del club con un cuadradito de su color, sin fondo: lo que destaca son los dorsales. */
 .cabecera-club {
-  padding: 4px 0;
-  border-radius: 8px;
-  background: var(--club-borde);
-  color: var(--sobre-club, #fff);
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--club-borde);
+  font-family: var(--letra-numeros);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
-.rejilla-clubes .dorsal {
-  min-height: 44px;
-  border-radius: 10px;
-  /* Los botones son más bajos: el número y el nombre van uno encima del otro, sin solaparse. */
+.cabecera-club::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--club-borde);
+}
+
+/* Cada dorsal es como el de papel que lleva el patinador: blanco, número negro grande, la franja
+   del club arriba y los cuatro agujeros de los imperdibles en las esquinas. */
+.dorsal {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  line-height: 1;
-  font-size: min(calc(100cqi / var(--columnas) * 0.36), 30px);
-}
-
-.rejilla-clubes .dorsal .nombre-dorsal {
-  position: static;
-  max-width: 100%;
-  padding: 0 4px;
-  box-sizing: border-box;
-  font-size: 9px;
-}
-
-.rejilla-clubes .dorsal .marca {
-  top: 2px;
-  right: 4px;
-  font-size: 10px;
-}
-
-.dorsal {
-  position: relative;
+  min-width: 0;
   padding: 0;
-  min-height: 56px;
-  border: 2px solid transparent;
-  border-radius: 12px;
-  background: var(--tecla);
-  box-shadow: var(--sombra);
+  border: 0;
+  border-top: 7px solid var(--franja, var(--borde));
+  border-radius: 4px;
+  background-color: var(--papel);
+  background-image:
+    radial-gradient(circle at 7px 6px, var(--fondo) 2.4px, transparent 2.9px),
+    radial-gradient(circle at calc(100% - 7px) 6px, var(--fondo) 2.4px, transparent 2.9px),
+    radial-gradient(circle at 7px calc(100% - 6px), var(--fondo) 2.4px, transparent 2.9px),
+    radial-gradient(circle at calc(100% - 7px) calc(100% - 6px), var(--fondo) 2.4px, transparent 2.9px);
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.08), 0 2px 6px rgb(20 30 50 / 0.1);
+  color: var(--tinta);
+  font-family: var(--letra-numeros);
   /* Más pequeño cuantas más columnas haya, para que quepan los dorsales de tres cifras. */
   font-size: clamp(20px, calc(100cqi / var(--columnas, 6) * 0.42), 44px);
-  font-weight: 900;
+  font-weight: 800;
+  line-height: 1;
   transition: transform 0.08s;
   /* Evita el retardo y el zoom del doble toque en iPad. */
   touch-action: manipulation;
@@ -351,158 +476,121 @@ button:disabled {
   -webkit-user-select: none;
 }
 
+.rejilla-clubes .dorsal {
+  font-size: min(calc(100cqi / var(--columnas) * 0.42), 32px);
+}
+
 .dorsal:active {
   transform: scale(0.96);
 }
 
-/* Cada club con sus colores (vienen en variables desde estiloClub.ts): fondo suave, borde y número
-   del color principal y una raya a la izquierda del secundario, como el color de escudería. */
+/* La franja de arriba es del color del club (viene en variables desde estiloClub.ts). */
 .dorsal.con-club {
-  background: var(--club-tinte);
-  border-color: var(--club-borde);
-  color: var(--club-numero);
+  --franja: var(--club-borde);
 }
 
-.dorsal.con-club::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 10px;
-  bottom: 10px;
-  width: 6px;
-  border-radius: 0 3px 3px 0;
-  background: var(--club-raya);
-}
-
+/* Nombre de pila de los nuestros, debajo del número. */
 .dorsal .nombre-dorsal {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 4px;
+  max-width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+  font-family: var(--letra);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--club-numero, var(--suave));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* El dorsal tocado se rellena en negro con su puesto en la esquina, sea del club que sea
-   (el rojo se confundiría con los clubes rojos). */
-.dorsal[aria-pressed='true'],
-.dorsal.con-club[aria-pressed='true'] {
-  background: var(--tocado);
-  border-color: var(--tocado);
+/* El dorsal tocado se vuelve negro, con un filo amarillo y su puesto en la esquina. */
+.dorsal[aria-pressed='true'] {
+  background-color: var(--tocado);
   color: var(--sobre-tocado);
+  box-shadow: 0 0 0 3px var(--aviso);
 }
 
-/* La raya del club se mantiene en el tocado, para seguir viendo de qué equipo es. */
+.dorsal[aria-pressed='true'] .nombre-dorsal {
+  color: inherit;
+}
 
 .dorsal .marca {
   position: absolute;
-  top: 4px;
-  right: 8px;
-  font-size: 14px;
-  font-weight: 900;
-  letter-spacing: 0.04em;
+  top: 2px;
+  right: 5px;
+  font-family: var(--letra);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--aviso);
 }
 
-/* Dorsales que ya no están en carrera: apagados, con borde discontinuo y sin poder tocarse. */
+/* Los que ya no corren: el papel apagado y su código (DOB, ABA, DSQ) estampado en rojo encima. */
 .dorsal.fuera {
-  background: transparent;
-  border: 2px dashed var(--linea);
+  background-color: color-mix(in srgb, var(--fondo) 40%, var(--papel));
   box-shadow: none;
   color: var(--apagado);
+  /* Los botones desactivados se ven al 40 %; aquí el sello tiene que leerse bien. */
   opacity: 1;
 }
 
-.dorsal.fuera::before {
-  display: none;
-}
-
-.dorsal.fuera.con-club {
-  background: transparent;
-  border-color: var(--linea);
-  color: var(--apagado);
+.dorsal.fuera .marca {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--letra-numeros);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--acento);
+  transform: rotate(-14deg);
 }
 
 /* En el modo "la escapada dobla al pelotón", los escapados elegidos van en azul. */
-.dorsal.escapado,
-.dorsal.con-club.escapado {
-  background: var(--marino);
-  border-color: var(--marino);
+.dorsal.escapado {
+  background-color: var(--marino);
   color: var(--sobre-color);
 }
 
-.herramientas {
+/* ---------- Abajo a la derecha: el sprint que se está anotando ---------- */
+
+.dock {
+  grid-area: dock;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--sombra);
 }
 
-.herramientas button {
-  flex: 1;
-  min-width: 160px;
-  padding: 12px;
-  font-size: 15px;
-}
-
-.panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 0;
-  min-height: 0;
-}
-
-.sprint {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 14px;
-}
-
-.sprint h2 {
+.dock h2 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 900;
+  font-family: var(--letra-numeros);
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.sprint .boton-principal {
+.dock button {
+  padding: 10px;
+}
+
+.dock .boton-principal {
   margin-top: 0;
 }
 
-.cabecera-sprint {
+.cuenta {
   display: flex;
-  align-items: flex-end;
   justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
+  margin: 0;
+  font-size: 14px;
 }
 
-/* El número de vueltas que faltan, enorme, como el contador de vueltas de la F1. */
-.a-falta {
-  font-size: 52px;
-  font-weight: 900;
-  line-height: 0.9;
-}
-
-.a-falta.final {
-  font-size: 34px;
-  color: var(--acento);
-}
-
-.datos {
-  display: flex;
-  gap: 16px;
-  text-align: right;
-}
-
-.datos b {
-  display: block;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1;
+.cuenta b {
+  font-family: var(--letra-numeros);
+  font-size: 18px;
+  font-weight: 800;
 }
 
 .huecos {
@@ -517,46 +605,75 @@ button:disabled {
 
 .huecos li {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 4px;
-  padding: 6px 8px;
+  height: 54px;
+  padding: 0 10px;
+  box-sizing: border-box;
   border: 2px dashed var(--linea);
   border-radius: 10px;
 }
 
 .huecos li.lleno {
-  border-style: solid;
-  border-color: var(--acento);
+  border: 0;
+  background: var(--tocado);
+  color: var(--sobre-tocado);
 }
 
 .huecos strong {
-  font-size: 28px;
-  font-weight: 900;
+  font-family: var(--letra-numeros);
+  font-size: 30px;
+  font-weight: 800;
 }
 
 .huecos small {
-  font-weight: 700;
+  font-size: 13px;
   color: var(--suave);
 }
 
+.huecos li.lleno small {
+  color: var(--apagado);
+}
+
 .boton-deshacer {
-  min-height: 56px;
+  min-height: 52px;
   border: 0;
   background: var(--marino);
   color: var(--sobre-color);
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-family: var(--letra-numeros);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* Sin registrar, escapada e historial: tres botones con icono debajo de Deshacer. */
+.herramientas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.dock .herramientas button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--fondo);
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 /* El último sprint guardado se resalta unos segundos para confirmar que se ha anotado. */
 .ultimo {
   margin: 0;
-  padding: 6px 8px;
+  padding: 5px 9px;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 13px;
   color: var(--suave);
   animation: aviso 4s ease-out;
 }
@@ -577,91 +694,101 @@ button:disabled {
 
 .escapados {
   margin: 0;
+  font-family: var(--letra-numeros);
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
 }
 
-/* Mientras se corrige un sprint del historial, la tarjeta lo indica en amarillo. */
-.sprint.corrigiendo {
+/* Mientras se corrige un sprint del historial, el recuadro lo indica en amarillo. */
+.dock.corrigiendo {
   background: var(--aviso);
 }
 
 /* ---------- Torre de clasificación ---------- */
 
 .torre {
-  flex: 1;
+  grid-area: torre;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border: 0;
+  border-radius: 12px;
 }
 
 .torre-cabecera {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding: 10px 14px 6px;
-  border-bottom: 1px solid var(--linea);
+  padding: 10px 12px 6px;
 }
 
 .torre-cabecera h2 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-family: var(--letra-numeros);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.torre-cabecera .etiqueta {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
 }
 
 .torre-filas {
   overflow-y: auto;
-  padding: 4px 0;
 }
 
 .torre .ayuda {
-  padding: 10px 14px;
+  padding: 10px 12px;
 }
 
-/* Puesto · raya del equipo · dorsal · nombre · puntos · distancia al líder */
+/* Puesto · raya del equipo · dorsal · nombre · puntos */
 .fila-torre {
   display: grid;
-  grid-template-columns: 26px 6px 40px 1fr 36px 92px;
+  grid-template-columns: 20px 4px 34px 1fr 34px;
   align-items: center;
-  gap: 8px;
-  padding: 5px 14px;
+  gap: 7px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 14px;
 }
 
 .fila-torre:nth-child(odd) {
-  background: color-mix(in srgb, var(--fondo) 45%, transparent);
+  background: color-mix(in srgb, var(--fondo) 35%, transparent);
 }
 
 .fila-torre .puesto {
   text-align: right;
+  font-family: var(--letra-numeros);
+  font-size: 15px;
   font-weight: 700;
-  color: var(--suave);
 }
 
 .fila-torre .raya {
   height: 18px;
   border-radius: 2px;
+  background: var(--club-borde, var(--borde));
 }
 
-.fila-torre .raya {
-  background: linear-gradient(var(--club-borde) 0 50%, var(--club-raya) 50%);
+.fila-torre .numero {
+  font-family: var(--letra-numeros);
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.fila-torre .numero,
 .fila-torre .puntos {
-  font-size: 18px;
-  font-weight: 900;
+  font-family: var(--letra-numeros);
+  font-size: 17px;
+  font-weight: 800;
 }
 
-.fila-torre .puntos,
-.fila-torre .distancia {
+.fila-torre .puntos {
   text-align: right;
 }
 
 .fila-torre .nombre {
-  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -669,54 +796,46 @@ button:disabled {
 
 .fila-torre.equipo .nombre {
   color: var(--equipo);
-  font-weight: 700;
-}
-
-.fila-torre .distancia {
-  font-size: 14px;
   font-weight: 600;
 }
 
-.fila-torre .distancia.lider {
-  color: var(--acento);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-/* Quien ya no puede alcanzar al líder, y quien ya no corre, se ven apagados. */
-.fila-torre .distancia.sin-opciones,
+/* Quien ya no corre se ve apagado, con su código (DOB, ABA, DSQ) en rojo en lugar de los puntos. */
 .fila-torre.fuera,
 .fila-torre.fuera .nombre {
   color: var(--apagado);
 }
 
-.fila-torre.fuera .distancia {
-  font-weight: 900;
-  letter-spacing: 0.08em;
-}
-
-.torre .nota {
-  margin: 0;
-  padding: 6px 14px 10px;
+.fila-torre .puntos.codigo {
   font-size: 14px;
-  color: var(--suave);
+  font-weight: 700;
+  color: var(--acento);
 }
 
 .torre .errores {
   margin: 0;
-  padding: 6px 14px 10px 32px;
-  font-size: 15px;
+  padding: 6px 12px 10px 30px;
+  font-size: 14px;
 }
 
-/* En móvil en vertical, la columna pasa debajo y la rejilla se queda en cuatro columnas. */
+/* En móvil en vertical todo va en una columna: rejilla, sprint y clasificación. */
 @media (max-width: 820px) {
   .carrera {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: 'barra' 'rejilla' 'dock' 'torre';
     height: auto;
   }
 
-  .rejilla {
+  .barra-carrera {
+    flex-wrap: wrap;
+  }
+
+  .linea-sprints {
+    order: 1;
+    width: 100%;
+  }
+
+  .rejilla:not(.rejilla-clubes) {
     grid-template-columns: repeat(4, 1fr);
   }
 
@@ -949,65 +1068,63 @@ select {
 
 /* ---------- Nueva carrera ---------- */
 
-/* Formulario a la izquierda y, a la derecha, el resumen en directo con el botón para seguir. */
+/* Tres columnas a toda la altura: división, reglas y resumen. Todo cabe sin desplazar en el iPad. */
 .crear-carrera {
   display: grid;
-  gap: 12px;
-  align-content: start;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 12px 16px 24px;
+  grid-template-columns: 280px 1fr 330px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'barra barra barra'
+    'divisiones reglas resumen';
+  gap: 10px;
+  height: 100dvh;
+  padding: 10px;
+  box-sizing: border-box;
   font-variant-numeric: tabular-nums;
 }
 
-.crear-columnas {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 12px;
-  align-items: start;
+.crear-carrera > .barra {
+  grid-area: barra;
+  min-height: 48px;
+  padding: 0 8px 0 14px;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--sombra);
 }
 
-.crear-formulario {
-  display: grid;
-  gap: 12px;
-  min-width: 0;
-}
-
-.bloque {
-  display: grid;
-  gap: 14px;
-  padding: 16px;
-  align-content: start;
-}
-
-.bloque h2 {
+.crear-carrera h2 {
   margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--suave);
 }
 
-.bloque input,
-.bloque select {
-  font-size: 20px;
-  padding: 10px 12px;
-}
-
-.divisiones {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+.crear-divisiones {
+  grid-area: divisiones;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
 }
 
+/* Cada división como un dorsal de papel: blanco con franja arriba; la elegida, negra con franja roja. */
 .division {
   display: grid;
-  gap: 2px;
-  padding: 10px 12px;
+  gap: 1px;
+  padding: 10px 14px;
+  border: 0;
+  border-top: 6px solid var(--linea);
+  border-radius: 4px;
+  background: var(--papel);
   text-align: left;
-  border: 2px solid var(--linea);
-  background: var(--tecla);
+  box-shadow: var(--sombra);
 }
 
 .division b {
-  font-size: 18px;
-  font-weight: 900;
+  font-family: var(--letra-numeros);
+  font-size: 21px;
+  font-weight: 700;
   line-height: 1.1;
 }
 
@@ -1017,104 +1134,204 @@ select {
   color: var(--suave);
 }
 
-.division.otra {
-  border-style: dashed;
-}
-
 .division[aria-pressed='true'] {
+  border-top-color: var(--acento);
   background: var(--tocado);
-  border-color: var(--tocado);
   color: var(--sobre-tocado);
 }
 
 .division[aria-pressed='true'] span {
-  color: inherit;
-  opacity: 0.75;
+  color: var(--apagado);
+}
+
+.division.otra {
+  border: 2px dashed var(--borde);
+  background: transparent;
+  box-shadow: none;
+}
+
+.division.otra[aria-pressed='true'] {
+  border-style: solid;
+  border-color: var(--tocado);
+  background: var(--tocado);
+}
+
+.crear-reglas {
+  grid-area: reglas;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 12px;
+}
+
+.crear-reglas input,
+.crear-reglas select {
+  font-size: 17px;
+  padding: 9px 12px;
+}
+
+.dos-campos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* Número con − y + a los lados, en grande, para no tener que sacar el teclado. */
+.paso {
+  display: grid;
+  grid-template-columns: 58px 1fr 58px;
+  height: 56px;
+  border: 2px solid var(--tocado);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.paso button {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--fondo);
+  color: var(--marino);
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.paso input {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  text-align: center;
+  font-family: var(--letra-numeros);
+  font-size: 36px;
+  font-weight: 800;
+}
+
+/* Puntos de cada puesto como fichas, con − y + para quitar o añadir puestos. */
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.fichas input,
+.fichas button {
+  width: 42px;
+  height: 46px;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.crear-reglas .fichas input {
+  border: 2px solid var(--tocado);
+  border-top-width: 5px;
+  font-family: var(--letra-numeros);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.fichas button {
+  border: 2px dashed var(--borde);
+  background: transparent;
+  color: var(--marino);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.crear-reglas .selector button {
+  padding: 11px;
 }
 
 .crear-resumen {
-  position: sticky;
-  top: 12px;
+  grid-area: resumen;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 12px;
 }
 
 .sprints-previstos {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 4px;
 }
 
 .sprints-previstos span:not(.ayuda) {
+  display: grid;
+  place-items: center;
   min-width: 34px;
-  padding: 4px 6px;
+  height: 30px;
+  padding: 0 4px;
   box-sizing: border-box;
-  text-align: center;
-  border-radius: 8px;
-  border: 1px solid var(--linea);
-  background: var(--tecla);
-  font-weight: 900;
+  border-radius: 6px;
+  background: var(--fondo);
+  font-family: var(--letra-numeros);
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .sprints-previstos span.final {
-  padding: 4px 10px;
+  padding: 0 10px;
   text-transform: capitalize;
   background: var(--acento);
-  border-color: var(--acento);
   color: var(--sobre-color);
 }
 
 .dato-grande {
-  margin: 0;
+  margin: 4px 0 0;
   color: var(--suave);
-  font-weight: 600;
 }
 
 .dato-grande b {
   margin-right: 6px;
+  font-family: var(--letra-numeros);
   font-size: 44px;
-  font-weight: 900;
+  font-weight: 800;
   line-height: 1;
   color: var(--texto);
 }
 
+/* Clubes en dos columnas: código, barra proporcional a los inscritos y el número. */
 .recuento-clubes {
   display: grid;
-  gap: 2px;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px 14px;
 }
 
-/* Una fila por club: raya con sus colores, código, barra proporcional al número de inscritos y el número. */
 .recuento {
   display: grid;
-  grid-template-columns: 6px 44px 1fr 28px;
-  gap: 8px;
+  grid-template-columns: 34px 1fr 20px;
+  gap: 6px;
   align-items: center;
-  padding: 3px 4px;
-  border-radius: 6px;
-}
-
-.recuento .raya {
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(var(--club-borde) 0 50%, var(--club-raya) 50%);
+  height: 25px;
+  font-size: 14px;
 }
 
 .recuento b {
-  font-weight: 900;
-  letter-spacing: 0.06em;
+  font-family: var(--letra-numeros);
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .recuento .barrita {
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(var(--club-borde), var(--club-borde)) left / var(--parte) 100% no-repeat, var(--linea);
+  background: linear-gradient(var(--club-borde), var(--club-borde)) left / var(--parte) 100% no-repeat, var(--fondo);
 }
 
 .recuento .cuantos {
   text-align: right;
-  font-weight: 700;
-}
-
-.recuento.nuestro {
-  background: var(--equipo-suave);
+  font-weight: 600;
 }
 
 .recuento.nuestro b,
@@ -1122,39 +1339,49 @@ select {
   color: var(--equipo);
 }
 
+/* El botón para seguir va pegado abajo, siempre a la vista. */
 .crear-resumen .boton-principal {
-  margin-top: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  margin-top: auto;
+  min-height: 66px;
+  font-family: var(--letra-numeros);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .boton-principal small {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  font-family: var(--letra);
+  font-size: 13px;
+  font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .barra h1 .sub {
-  font-weight: 600;
+  font-family: var(--letra);
+  font-size: 16px;
+  font-weight: 400;
   color: var(--suave);
-  text-transform: none;
-  letter-spacing: 0;
 }
 
+/* En pantallas estrechas, una columna detrás de otra. */
 @media (max-width: 900px) {
-  .crear-columnas {
+  .crear-carrera {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: 'barra' 'divisiones' 'reglas' 'resumen';
+    height: auto;
   }
 
-  .crear-resumen {
-    position: static;
-  }
-
-  .divisiones {
+  .crear-divisiones {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crear-divisiones h2 {
+    grid-column: 1 / -1;
   }
 }
 

@@ -1,4 +1,5 @@
-// Pantalla de la carrera en directo: rejilla de dorsales a la izquierda y panel del sprint a la derecha.
+// Pantalla de la carrera en directo: arriba la línea de sprints, a la izquierda la rejilla de dorsales
+// y a la derecha la clasificación y, debajo, el sprint que se está anotando.
 //
 // Para registrar un sprint se tocan los dorsales en orden de llegada. Al tocar el último puesto
 // que puntúa, el sprint se guarda solo. Tocar otra vez un dorsal ya elegido lo quita.
@@ -17,6 +18,8 @@ import { BotonDorsal } from './BotonDorsal'
 import { estiloClub } from './estiloClub'
 import { ClasificacionEnVivo } from './ClasificacionEnVivo'
 import { Historial } from './Historial'
+import { Icono } from './Icono'
+import { LineaSprints } from './LineaSprints'
 import { MenuIncidencias } from './MenuIncidencias'
 
 const T = TEXTOS.carrera
@@ -38,6 +41,8 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   // Mientras no es null, los toques eligen a los escapados que doblan al pelotón en vez de anotar el sprint.
   const [escapados, setEscapados] = useState<Dorsal[] | null>(null)
   const [historialAbierto, setHistorialAbierto] = useState(false)
+  // Menú de arriba a la derecha, con «Nueva carrera» (lejos de los dorsales para no tocarlo sin querer).
+  const [menuAbierto, setMenuAbierto] = useState(false)
   // Sprint del historial que se está corrigiendo: su posición en la lista de sucesos y la nueva llegada.
   const [correccion, setCorreccion] = useState<{ indice: number; llegada: Dorsal[] } | null>(null)
   // Rejilla por equipos (una columna por club) o por número de dorsal. Se recuerda en el dispositivo.
@@ -130,6 +135,7 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
   }
 
   function salir() {
+    setMenuAbierto(false)
     if (window.confirm(T.confirmarSalir)) alSalir()
   }
 
@@ -169,153 +175,165 @@ export function PantallaCarrera({ carrera, alCambiar, alSalir }: Props) {
     )
   }
 
-  // Lo que dice la cabecera del sprint: «a falta de N» con el número en grande, o el sprint final.
-  const cabecera = siguienteSprint === null
-    ? { etiqueta: T.terminada, valor: null }
-    : siguienteSprint.esFinal
-      ? { etiqueta: T.ultimaVuelta, valor: T.sprintFinal }
-      : { etiqueta: T.sprintAFalta, valor: String(siguienteSprint.aFalta) }
+  // El nombre de la división en grande y la competición debajo: «Liga Nacional 2026 · 1ª femenina».
+  const partesNombre = carrera.nombre.split(' · ')
+  const titulo = partesNombre.at(-1)
+  const competicion = partesNombre.slice(0, -1).join(' · ')
+
+  // Mientras se corrige un sprint o se elige la escapada, abajo a la derecha se ve ese modo en vez del sprint.
+  let dock
+  if (correccion !== null && sprintCorregido?.tipo === 'sprint') {
+    dock = (
+      <section className="dock corrigiendo">
+        <h2>
+          {TH.corrigiendo}: {sprintCorregido.aFalta === 0 ? T.sprintFinal : `${T.sprintAFalta} ${sprintCorregido.aFalta}`}
+        </h2>
+        <p className="ayuda">{TH.ayudaCorregir}</p>
+        <ol className="huecos">
+          {Array.from({ length: puestosCorreccion }, (_, i) => (
+            <li key={i} className={correccion.llegada[i] ? 'lleno' : ''}>
+              <small>{T.puesto(i + 1)}</small>
+              <strong>{correccion.llegada[i] ?? '—'}</strong>
+            </li>
+          ))}
+        </ol>
+        <button className="boton-principal" onClick={guardarCorreccion}>
+          {TH.guardar}
+        </button>
+        <button onClick={() => setCorreccion(null)}>{TH.cancelar}</button>
+      </section>
+    )
+  } else if (escapados !== null) {
+    dock = (
+      <section className="dock">
+        <h2>{TI.tocaEscapados}</h2>
+        <p className="ayuda">{TI.escapadaDetalle}</p>
+        <p className="escapados">{escapados.length > 0 ? escapados.join(', ') : '—'}</p>
+        <button className="boton-principal" onClick={confirmarEscapada} disabled={escapados.length === 0}>
+          {TI.confirmar}
+        </button>
+        <button onClick={() => setEscapados(null)}>{TI.cancelar}</button>
+      </section>
+    )
+  } else {
+    dock = (
+      <section className="dock">
+        <p className="cuenta">
+          {siguienteSprint === null ? (
+            <span>{T.terminada}</span>
+          ) : (
+            <span>
+              {siguienteSprint.esFinal ? T.sprintFinal : T.sprintAFalta} {!siguienteSprint.esFinal && <b>{siguienteSprint.aFalta}</b>}
+            </span>
+          )}
+          <span>{T.cuenta(sprintsRestantes, cuentas.puntosEnJuego)}</span>
+        </p>
+
+        {siguienteSprint ? (
+          <ol className="huecos">
+            {siguienteSprint.puntos.map((puntos, i) => (
+              <li key={i} className={seleccion[i] ? 'lleno' : ''}>
+                <small>{T.puesto(i + 1)}</small>
+                <strong>{seleccion[i] ?? '—'}</strong>
+                <small>{puntos} pt</small>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <button className="boton-principal" onClick={() => alCambiar(cambiarEstado(carrera, 'terminada'))}>
+            {TEXTOS.final.terminar}
+          </button>
+        )}
+
+        <button className="boton-deshacer" onClick={deshacer} disabled={seleccion.length === 0 && carrera.sucesos.length === 0}>
+          {T.deshacer}
+        </button>
+
+        <div className="herramientas">
+          {siguienteSprint && (
+            <button onClick={sinRegistrar} disabled={seleccion.length > 0}>
+              <Icono nombre="sin" />
+              {T.sinRegistrarCorto}
+            </button>
+          )}
+          <button onClick={() => setEscapados([])} disabled={seleccion.length > 0}>
+            <Icono nombre="escapada" />
+            {T.escapadaCorto}
+          </button>
+          <button onClick={() => setHistorialAbierto(true)} disabled={seleccion.length > 0}>
+            <Icono nombre="historial" />
+            {T.historialCorto}
+          </button>
+        </div>
+
+        {ultimo && (
+          // `key` cambia con cada suceso, así React crea el bloque de nuevo y la animación de aviso se repite.
+          <p className="ultimo" key={carrera.sucesos.length}>
+            {T.ultimo}: <b>{describirSuceso(ultimo)}</b>
+          </p>
+        )}
+      </section>
+    )
+  }
 
   return (
     <main className="carrera">
-      <section className="columna-rejilla">
-        <header className="barra">
-          <h1>{carrera.nombre}</h1>
-          {grupos && (
-            <div className="selector-vista" role="group" aria-label={T.vista}>
-              {(['equipos', 'dorsal'] as const).map((v) => (
-                <button key={v} className="chip" aria-pressed={vista === v} onClick={() => elegirVista(v)}>
-                  {v === 'equipos' ? T.porEquipos : T.porDorsal}
-                </button>
-              ))}
-            </div>
-          )}
-          <button className="chip" onClick={salir}>
-            {T.nuevaCarrera}
-          </button>
-        </header>
-
-        {grupos && vista === 'equipos' ? (
-          // Una columna por club, con su código arriba; todas con el mismo número de filas para que se alineen.
-          <div
-            className="rejilla rejilla-clubes"
-            aria-label="Dorsales"
-            style={{ '--columnas': grupos.length, '--filas': filas } as CSSProperties}
-          >
-            {grupos.map((grupo) => (
-              <div key={grupo.club} className="columna-club" style={estiloClub(grupo.club)}>
-                <div className="cabecera-club">{grupo.club}</div>
-                {grupo.participantes.map((p) => botonDorsal(p, false))}
-              </div>
+      <header className="barra barra-carrera">
+        <h1>
+          <span>{titulo}</span>
+          {competicion && <small>{competicion}</small>}
+        </h1>
+        <LineaSprints carrera={carrera} siguiente={siguienteSprint?.aFalta ?? null} />
+        {grupos && (
+          <div className="selector-vista" role="group" aria-label={T.vista}>
+            {(['equipos', 'dorsal'] as const).map((v) => (
+              <button key={v} aria-pressed={vista === v} onClick={() => elegirVista(v)}>
+                {v === 'equipos' ? T.porEquipos : T.porDorsal}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="rejilla" aria-label="Dorsales" style={{ '--columnas': columnas } as CSSProperties}>
-            {carrera.participantes.map((p) => botonDorsal(p, true))}
-          </div>
         )}
+        <button className="boton-menu" onClick={() => setMenuAbierto(true)}>
+          <Icono nombre="menu" />
+          {T.menu}
+        </button>
+      </header>
 
-        {correccion === null && escapados === null && (
-          <div className="herramientas">
-            {siguienteSprint && (
-              <button onClick={sinRegistrar} disabled={seleccion.length > 0}>
-                {T.sinRegistrar}
-              </button>
-            )}
-            <button onClick={() => setEscapados([])} disabled={seleccion.length > 0}>
-              {TI.escapadaDobla}
-            </button>
-            <button onClick={() => setHistorialAbierto(true)} disabled={seleccion.length > 0}>
-              {TH.abrir}
-            </button>
-          </div>
-        )}
-        <p className="ayuda">{TI.ayuda}</p>
-      </section>
-
-      <aside className="panel">
-        {correccion !== null && sprintCorregido?.tipo === 'sprint' ? (
-          <div className="tarjeta sprint corrigiendo">
-            <h2>
-              {TH.corrigiendo}: {sprintCorregido.aFalta === 0 ? T.sprintFinal : `${T.sprintAFalta} ${sprintCorregido.aFalta}`}
-            </h2>
-            <p className="ayuda">{TH.ayudaCorregir}</p>
-            <ol className="huecos">
-              {Array.from({ length: puestosCorreccion }, (_, i) => (
-                <li key={i} className={correccion.llegada[i] ? 'lleno' : ''}>
-                  <small>{T.puesto(i + 1)}</small>
-                  <strong>{correccion.llegada[i] ?? '—'}</strong>
-                </li>
-              ))}
-            </ol>
-            <button className="boton-principal" onClick={guardarCorreccion}>
-              {TH.guardar}
-            </button>
-            <button onClick={() => setCorreccion(null)}>{TH.cancelar}</button>
-          </div>
-        ) : escapados !== null ? (
-          <div className="tarjeta sprint">
-            <h2>{TI.tocaEscapados}</h2>
-            <p className="ayuda">{TI.escapadaDetalle}</p>
-            <p className="escapados">{escapados.length > 0 ? escapados.join(', ') : '—'}</p>
-            <button className="boton-principal" onClick={confirmarEscapada} disabled={escapados.length === 0}>
-              {TI.confirmar}
-            </button>
-            <button onClick={() => setEscapados(null)}>{TI.cancelar}</button>
-          </div>
-        ) : (
-          <div className="tarjeta sprint">
-            <div className="cabecera-sprint">
-              <div>
-                <div className="etiqueta">{cabecera.etiqueta}</div>
-                {cabecera.valor && (
-                  <div className={siguienteSprint?.esFinal ? 'a-falta final' : 'a-falta'}>{cabecera.valor}</div>
-                )}
-              </div>
-              <div className="datos">
-                <div>
-                  <span className="etiqueta">{T.quedan}</span>
-                  <b>{sprintsRestantes}</b>
-                </div>
-                <div>
-                  <span className="etiqueta">{T.enJuego}</span>
-                  <b>{cuentas.puntosEnJuego}</b>
-                </div>
-              </div>
+      {grupos && vista === 'equipos' ? (
+        // Una columna por club, con su código arriba; todas con el mismo número de filas para que se alineen.
+        <div
+          className="rejilla rejilla-clubes"
+          aria-label="Dorsales"
+          style={{ '--columnas': grupos.length, '--filas': filas } as CSSProperties}
+        >
+          {grupos.map((grupo) => (
+            <div key={grupo.club} className="columna-club" style={estiloClub(grupo.club)}>
+              <div className="cabecera-club">{grupo.club}</div>
+              {grupo.participantes.map((p) => botonDorsal(p, false))}
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rejilla" aria-label="Dorsales" style={{ '--columnas': columnas } as CSSProperties}>
+          {carrera.participantes.map((p) => botonDorsal(p, true))}
+        </div>
+      )}
 
-            {siguienteSprint ? (
-              <ol className="huecos">
-                {siguienteSprint.puntos.map((puntos, i) => (
-                  <li key={i} className={seleccion[i] ? 'lleno' : ''}>
-                    <small>{T.puesto(i + 1)}</small>
-                    <strong>{seleccion[i] ?? '—'}</strong>
-                    <small>{puntos} pt</small>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <button className="boton-principal" onClick={() => alCambiar(cambiarEstado(carrera, 'terminada'))}>
-                {TEXTOS.final.terminar}
-              </button>
-            )}
+      <ClasificacionEnVivo cuentas={cuentas} />
+      {dock}
 
-            <button className="boton-deshacer" onClick={deshacer} disabled={seleccion.length === 0 && carrera.sucesos.length === 0}>
-              {T.deshacer}
+      {menuAbierto && (
+        <div className="menu-fondo" onClick={(e) => e.target === e.currentTarget && setMenuAbierto(false)}>
+          <div className="menu" role="dialog" aria-modal="true" aria-label={T.menu}>
+            <h2>{T.menu}</h2>
+            <p className="ayuda">{TI.ayuda}</p>
+            <button onClick={salir}>{T.nuevaCarrera}</button>
+            <button className="cancelar" onClick={() => setMenuAbierto(false)}>
+              {T.cerrar}
             </button>
-
-            {ultimo && (
-              // `key` cambia con cada suceso, así React crea el bloque de nuevo y la animación de aviso se repite.
-              <p className="ultimo" key={carrera.sucesos.length}>
-                {T.ultimo}: <b>{describirSuceso(ultimo)}</b>
-              </p>
-            )}
           </div>
-        )}
-
-        <ClasificacionEnVivo cuentas={cuentas} />
-      </aside>
-
+        </div>
+      )}
       {historialAbierto && (
         <Historial
           sucesos={carrera.sucesos}

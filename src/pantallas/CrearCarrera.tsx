@@ -1,6 +1,7 @@
-// Pantalla para preparar una carrera: reglas, vueltas y participantes. Los participantes salen de una lista
-// de inscritos (dorsal, nombre y club) o, en otras carreras, se escriben los dorsales y se elige el equipo.
-// A la derecha se ve en directo qué sprints habrá, cuántos corren de cada club y los errores.
+// Pantalla para preparar una carrera, en tres columnas que caben en el iPad sin desplazar: a la izquierda
+// la división (cada una con su lista de inscritos, o «Otra carrera» para escribir los dorsales), en el
+// centro el nombre, las vueltas y los puntos, y a la derecha se ve en directo qué sprints habrá, cuántos
+// corren de cada club y los errores, con el botón para seguir siempre abajo.
 // Si en la división hay patinadores de San Juan, antes de empezar se elige quién de ellos corre.
 
 import { useState, type CSSProperties } from 'react'
@@ -13,6 +14,7 @@ import { LISTAS_INSCRITOS } from '../modelo/inscritos'
 import { PUNTOS_POR_DEFECTO, type Carrera, type ConfiguracionCarrera, type Dorsal, type Participante } from '../modelo/tipos'
 import { TEXTOS } from '../textos'
 import { estiloClub } from './estiloClub'
+import { Icono } from './Icono'
 import { PantallaConvocatoria } from './PantallaConvocatoria'
 import { PantallaHistorial } from './PantallaHistorial'
 import { PantallaJuegos } from './PantallaJuegos'
@@ -153,154 +155,189 @@ export function CrearCarrera({ alCrear }: Props) {
     <main className="crear-carrera">
       <header className="barra">
         <h1>{T.titulo}</h1>
-        <button className="chip" onClick={() => setViendoHistorial(true)}>
+        <button className="boton-menu" onClick={() => setViendoHistorial(true)}>
+          <Icono nombre="lista" />
           {TEXTOS.historialCarreras.abrir(carrerasGuardadas)}
         </button>
       </header>
 
-      <div className="crear-columnas">
-        <div className="crear-formulario">
-          <section className="tarjeta bloque">
-            <h2 className="etiqueta">{T.competicion}</h2>
-            <div className="divisiones">
-              {LISTAS_INSCRITOS.map((l) => {
-                const deSanJuan = l.participantes.filter(esNuestro).length
-                return (
-                  <button key={l.id} className="division" aria-pressed={listaId === l.id} onClick={() => elegirLista(l.id)}>
-                    <b>{nombreCorto(l.nombre)}</b>
-                    <span>{T.inscritos(l.participantes.length, deSanJuan)}</span>
-                  </button>
-                )
-              })}
-              <button className="division otra" aria-pressed={lista === null} onClick={() => elegirLista(OTRA)}>
-                <b>{T.otraCarrera}</b>
-                <span>{T.otraCarreraAyuda}</span>
-              </button>
-            </div>
+      {/* Izquierda: qué división corre. Una ficha por lista de inscritos y otra para escribir los dorsales. */}
+      <section className="crear-divisiones" aria-label={T.competicion}>
+        <h2>{T.queDivision}</h2>
+        {LISTAS_INSCRITOS.map((l) => {
+          const deSanJuan = l.participantes.filter(esNuestro).length
+          return (
+            <button key={l.id} className="division" aria-pressed={listaId === l.id} onClick={() => elegirLista(l.id)}>
+              <b>{nombreCorto(l.nombre)}</b>
+              <span>{T.inscritos(l.participantes.length, deSanJuan)}</span>
+            </button>
+          )
+        })}
+        <button className="division otra" aria-pressed={lista === null} onClick={() => elegirLista(OTRA)}>
+          <b>{T.otraCarrera}</b>
+          <span>{T.otraCarreraAyuda}</span>
+        </button>
+      </section>
 
+      {/* Centro: nombre, vueltas y puntos. Los números se cambian con − y + para no sacar el teclado. */}
+      <section className="tarjeta crear-reglas">
+        <label className="campo">
+          {T.nombre}
+          <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={T.nombreEjemplo} />
+          {lista && <small>{T.nombreAyuda}</small>}
+        </label>
+
+        {lista === null && (
+          <>
             <label className="campo">
-              {T.nombre}
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder={T.nombreEjemplo} />
-              {lista && <small>{T.nombreAyuda}</small>}
-            </label>
-
-            {lista === null && (
-              <>
-                <label className="campo">
-                  {T.dorsales}
-                  <input value={textoDorsales} onChange={(e) => setTextoDorsales(e.target.value)} placeholder="1-24" />
-                  <small>{T.dorsalesAyuda}</small>
-                </label>
-
-                <label className="campo">
-                  {T.equipo}
-                  <span className="fila-equipo">
-                    <select value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
-                      <option value="">{T.sinEquipo}</option>
-                      {juegos.map((j) => (
-                        <option key={j.id} value={j.id}>
-                          {j.nombre}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={() => setViendoJuegos(true)}>
-                      {T.gestionarEquipos}
-                    </button>
-                  </span>
-                </label>
-              </>
-            )}
-          </section>
-
-          <section className="tarjeta bloque formulario">
-            <h2 className="etiqueta campo-ancho">{T.vueltasYPuntos}</h2>
-            <label className="campo">
-              {T.vueltasTotales}
-              <input inputMode="numeric" value={vueltas} onChange={(e) => setVueltas(e.target.value)} />
+              {T.dorsales}
+              <input value={textoDorsales} onChange={(e) => setTextoDorsales(e.target.value)} placeholder="1-24" />
+              <small>{T.dorsalesAyuda}</small>
             </label>
 
             <label className="campo">
-              {T.primerSprint}
-              <input inputMode="numeric" value={primerSprint} onChange={(e) => setPrimerSprint(e.target.value)} />
-            </label>
-
-            <fieldset className="campo campo-ancho">
-              <legend>{T.frecuencia}</legend>
-              <div className="selector">
-                <button type="button" aria-pressed={frecuencia === 1} onClick={() => setFrecuencia(1)}>
-                  {T.cadaVuelta}
+              {T.equipo}
+              <span className="fila-equipo">
+                <select value={juegoId} onChange={(e) => setJuegoId(e.target.value)}>
+                  <option value="">{T.sinEquipo}</option>
+                  {juegos.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.nombre}
+                    </option>
+                  ))}
+                </select>
+                <button type="button" onClick={() => setViendoJuegos(true)}>
+                  {T.gestionarEquipos}
                 </button>
-                <button type="button" aria-pressed={frecuencia === 2} onClick={() => setFrecuencia(2)}>
-                  {T.unaSiUnaNo}
-                </button>
-              </div>
-            </fieldset>
-
-            <label className="campo">
-              {T.puntosIntermedio}
-              <input value={puntosIntermedio} onChange={(e) => setPuntosIntermedio(e.target.value)} />
+              </span>
             </label>
+          </>
+        )}
 
-            <label className="campo">
-              {T.puntosFinal}
-              <input value={puntosFinal} onChange={(e) => setPuntosFinal(e.target.value)} />
-            </label>
-          </section>
+        <div className="dos-campos">
+          <Paso etiqueta={T.vueltasTotales} valor={vueltas} alCambiar={setVueltas} />
+          <Paso etiqueta={T.primerSprint} valor={primerSprint} alCambiar={setPrimerSprint} />
         </div>
 
-        <aside className="tarjeta bloque crear-resumen" aria-label={T.resumen}>
-          <h2 className="etiqueta">{T.resumenSprints}</h2>
-          <div className="sprints-previstos">
-            {sprints.length === 0 && <span className="ayuda">{T.sinSprints}</span>}
-            {sprints.map((s) => (
-              <span key={s.aFalta} className={s.esFinal ? 'final' : undefined}>
-                {s.esFinal ? T.final : s.aFalta}
-              </span>
+        <fieldset className="campo">
+          <legend>{T.frecuencia}</legend>
+          <div className="selector">
+            <button type="button" aria-pressed={frecuencia === 1} onClick={() => setFrecuencia(1)}>
+              {T.cadaVuelta}
+            </button>
+            <button type="button" aria-pressed={frecuencia === 2} onClick={() => setFrecuencia(2)}>
+              {T.unaSiUnaNo}
+            </button>
+          </div>
+        </fieldset>
+
+        <div className="dos-campos">
+          <FichasPuntos etiqueta={T.puntosIntermedio} texto={puntosIntermedio} alCambiar={setPuntosIntermedio} />
+          <FichasPuntos etiqueta={T.puntosFinal} texto={puntosFinal} alCambiar={setPuntosFinal} />
+        </div>
+      </section>
+
+      {/* Derecha: lo que va a salir, en directo, y el botón para seguir siempre a la vista abajo. */}
+      <aside className="tarjeta crear-resumen" aria-label={T.resumen}>
+        <h2>{T.resumenSprints}</h2>
+        <div className="sprints-previstos">
+          {sprints.length === 0 && <span className="ayuda">{T.sinSprints}</span>}
+          {sprints.map((s) => (
+            <span key={s.aFalta} className={s.esFinal ? 'final' : undefined}>
+              {s.esFinal ? T.final : s.aFalta}
+            </span>
+          ))}
+        </div>
+
+        <p className="dato-grande">
+          <b>{participantes.length}</b> {clubes ? T.enClubes(clubes.length) : T.participantes}
+          {!clubes && delEquipo > 0 && ` (${delEquipo} ${T.delEquipo})`}
+        </p>
+        {clubes && (
+          <div className="recuento-clubes">
+            {clubes.map((g) => (
+              <div
+                key={g.club}
+                className={g.club === 'SJN' ? 'recuento nuestro' : 'recuento'}
+                style={{ ...estiloClub(g.club), '--parte': `${(g.participantes.length / Math.max(...clubes.map((c) => c.participantes.length))) * 100}%` } as CSSProperties}
+              >
+                <b>{g.club}</b>
+                <span className="barrita" />
+                <span className="cuantos">{g.participantes.length}</span>
+              </div>
             ))}
           </div>
+        )}
 
-          <h2 className="etiqueta">{T.listaParticipantes}</h2>
-          <p className="dato-grande">
-            <b>{participantes.length}</b> {clubes ? T.enClubes(clubes.length) : T.participantes}
-            {!clubes && delEquipo > 0 && ` (${delEquipo} ${T.delEquipo})`}
-          </p>
-          {clubes && (
-            <div className="recuento-clubes">
-              {clubes.map((g) => (
-                <div
-                  key={g.club}
-                  className={g.club === 'SJN' ? 'recuento nuestro' : 'recuento'}
-                  style={{ ...estiloClub(g.club), '--parte': `${(g.participantes.length / Math.max(...clubes.map((c) => c.participantes.length))) * 100}%` } as CSSProperties}
-                >
-                  <span className="raya" />
-                  <b>{g.club}</b>
-                  <span className="barrita" />
-                  <span className="cuantos">{g.participantes.length}</span>
-                </div>
-              ))}
-            </div>
-          )}
+        {errores.length > 0 && (
+          <ul className="errores">
+            {errores.map((e) => (
+              <li key={e}>{e}</li>
+            ))}
+          </ul>
+        )}
 
-          {errores.length > 0 && (
-            <ul className="errores">
-              {errores.map((e) => (
-                <li key={e}>{e}</li>
-              ))}
-            </ul>
-          )}
-
-          {nuestrosInscritos.length > 0 ? (
-            <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={() => setEligiendo(true)}>
-              {T.elegirQuienCorre}
-              <small>{T.deSanJuan}</small>
-            </button>
-          ) : (
-            <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={empezar}>
-              {T.empezar}
-            </button>
-          )}
-        </aside>
-      </div>
+        {nuestrosInscritos.length > 0 ? (
+          <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={() => setEligiendo(true)}>
+            {T.elegirQuienCorre}
+            <small>{T.deSanJuan(nuestrosInscritos.length)}</small>
+          </button>
+        ) : (
+          <button className="boton-principal" disabled={!sePuedeEmpezar} onClick={empezar}>
+            {T.empezar}
+          </button>
+        )}
+      </aside>
     </main>
+  )
+}
+
+/** Número con botones − y + a los lados. En el centro también se puede escribir. */
+function Paso({ etiqueta, valor, alCambiar }: { etiqueta: string; valor: string; alCambiar: (valor: string) => void }) {
+  const numero = Number(valor) || 0
+  return (
+    <div className="campo">
+      {etiqueta}
+      <div className="paso">
+        <button type="button" aria-label={`${etiqueta}: uno menos`} disabled={numero <= 1} onClick={() => alCambiar(String(numero - 1))}>
+          −
+        </button>
+        <input inputMode="numeric" aria-label={etiqueta} value={valor} placeholder="—" onChange={(e) => alCambiar(e.target.value)} />
+        <button type="button" aria-label={`${etiqueta}: uno más`} onClick={() => alCambiar(String(numero + 1))}>
+          +
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Puntos de cada puesto como fichas («3» «2» «1»): cada una se puede escribir, y con − y + se quita
+ * o se añade un puesto que puntúa. Por dentro sigue siendo el texto «3, 2, 1» que lee `leerPuntos`.
+ */
+function FichasPuntos({ etiqueta, texto, alCambiar }: { etiqueta: string; texto: string; alCambiar: (texto: string) => void }) {
+  const valores = texto.split(',').map((v) => v.trim())
+  const cambiar = (nuevos: string[]) => alCambiar(nuevos.join(', '))
+  return (
+    <div className="campo">
+      {etiqueta}
+      <div className="fichas">
+        {valores.map((v, i) => (
+          <input
+            key={i}
+            inputMode="numeric"
+            aria-label={`${etiqueta}: ${i + 1}.º`}
+            value={v}
+            onChange={(e) => cambiar(valores.map((otro, j) => (j === i ? e.target.value : otro)))}
+          />
+        ))}
+        <button type="button" aria-label={`${etiqueta}: un puesto menos`} disabled={valores.length <= 1} onClick={() => cambiar(valores.slice(0, -1))}>
+          −
+        </button>
+        <button type="button" aria-label={`${etiqueta}: un puesto más`} onClick={() => cambiar([...valores, '1'])}>
+          +
+        </button>
+      </div>
+    </div>
   )
 }

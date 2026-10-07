@@ -107,6 +107,20 @@ describe('desempates', () => {
     expect(filas.filter((f) => f.puntos === 0).every((f) => f.puesto === 3)).toBe(true)
   })
 
+  it('solo pide desempatar los empates que empiezan entre los cinco primeros', () => {
+    // Un sprint con puntos para siete: los dos últimos empatan a 1 punto en el 6.º puesto.
+    const conPuntos = (puntosIntermedio: number[]) => ({
+      configuracion: { vueltasTotales: 10, primerSprintAFalta: 2, frecuencia: 2 as const, puntosIntermedio, puntosFinal: [3, 2, 1] },
+      participantes: [1, 2, 3, 4, 5, 6, 7].map((dorsal) => ({ dorsal })),
+      sucesos: [sprint(2, 1, 2, 3, 4, 5, 6, 7)],
+    })
+    const sexto = calcularClasificacion(conPuntos([6, 5, 4, 3, 2, 1, 1]))
+    expect(sexto.filas.filter((f) => f.puntos === 1).map((f) => f.puesto)).toEqual([6, 6])
+    expect(sexto.desempatesPendientes).toEqual([])
+    // Si el empate es por el 5.º puesto, sí se pide.
+    expect(calcularClasificacion(conPuntos([6, 5, 4, 3, 2, 2])).desempatesPendientes).toEqual([[5, 6]])
+  })
+
   it('agrupa a tres empatados en un solo desempate', () => {
     const { desempatesPendientes } = calcularClasificacion(carrera([sprint(4, 1, 3), sprint(2, 2, 3), sprint(0, 4, 5, 6)]))
     expect(desempatesPendientes).toEqual([[1, 2, 3]])
